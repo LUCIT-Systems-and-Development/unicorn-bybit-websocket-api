@@ -1,4 +1,4 @@
-[![Get a UNICORN Trading Suite License](https://raw.githubusercontent.com/LUCIT-Systems-and-Development/unicorn-trading-suite/master/images/logo/LUCIT-UBS-License-Offer.png)](https://shop.lucit.services)
+[![Get a UNICORN Trading Suite License](https://raw.githubusercontent.com/LUCIT-Systems-and-Development/unicorn-trading-suite/master/images/logo/LUCIT-UBS-License-Offer.png)](https://shop.lucit.services/software/unicorn-trading-suite)
 
 [![GitHub Release](https://img.shields.io/github/release/LUCIT-Systems-and-Development/unicorn-bybit-websocket-api.svg?label=github)](https://github.com/LUCIT-Systems-and-Development/unicorn-bybit-websocket-api/releases)
 [![GitHub Downloads](https://img.shields.io/github/downloads/LUCIT-Systems-and-Development/unicorn-bybit-websocket-api/total?color=blue)](https://github.com/LUCIT-Systems-and-Development/unicorn-bybit-websocket-api/releases)
@@ -308,7 +308,7 @@ for [ICINGA](https://exchange.icinga.com/LUCIT/check_lucit_collector)/Nagios
 
 - Excessively tested on Linux, Mac and Windows on x86, arm32, arm64, ...
 
-If you like the project, please [![star](https://raw.githubusercontent.com/lucit-systems-and-development/unicorn-bybit-websocket-api/master/images/misc/star.png)](https://github.com/LUCIT-Systems-and-Development/unicorn-bybit-websocket-api/stargazers) it on 
+If you like the project, please [![star](https://raw.githubusercontent.com/lucit-systems-and-development/unicorn-bybit-websocket-api/master/images/misc/gh-star.png)](https://github.com/LUCIT-Systems-and-Development/unicorn-bybit-websocket-api/stargazers) it on 
 [GitHub](https://github.com/LUCIT-Systems-and-Development/unicorn-bybit-websocket-api)!
 
 ## Live Demo
