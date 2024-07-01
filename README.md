@@ -286,11 +286,6 @@ and specific streams with
 - Available as a package via `pip` and `conda` as precompiled C extension with stub files for improved Intellisense 
   functions and source code for easier debugging of the source code. [To the installation.](#installation-and-upgrade)
 
-- [Monitoring API service](https://github.com/LUCIT-Systems-and-Development/unicorn-bybit-websocket-api/wiki/UNICORN-Monitoring-API-Service) 
-and a [check_command](https://exchange.icinga.com/LUCIT/check_lucit_collector) 
-for [ICINGA](https://exchange.icinga.com/LUCIT/check_lucit_collector)/Nagios 
-[![icinga2-demo](https://raw.githubusercontent.com/lucit-systems-and-development/unicorn-bybit-websocket-api/master/images/misc/icinga.png)](https://github.com/LUCIT-Systems-and-Development/unicorn-bybit-websocket-api/wiki/UNICORN-Monitoring-API-Service)
-
 - Integration of [test cases](https://github.com/LUCIT-Systems-and-Development/unicorn-bybit-websocket-api/actions/workflows/unit-tests.yml) and [examples](#examples).
 
 - Customizable base URL.
@@ -310,16 +305,6 @@ for [ICINGA](https://exchange.icinga.com/LUCIT/check_lucit_collector)/Nagios
 
 If you like the project, please [![star](https://raw.githubusercontent.com/lucit-systems-and-development/unicorn-bybit-websocket-api/master/images/misc/gh-star.png)](https://github.com/LUCIT-Systems-and-Development/unicorn-bybit-websocket-api/stargazers) it on 
 [GitHub](https://github.com/LUCIT-Systems-and-Development/unicorn-bybit-websocket-api)!
-
-## Live Demo
-This live demo script is streaming from [bybit.com](https://www.bybit.com) and runs on a *CCX13* virtual 
-machine of [HETZNER CLOUD](https://hetzner.cloud/?ref=rKgYRMq0l8fd)
-
-[Open live monitor!](https://www.lucit.tech/unicorn-bybit-websocket-api-live-demo.html)
-
-[![live-demo](https://ubwa-demo.lucit.tech/ps.png)](https://www.lucit.tech/unicorn-bybit-websocket-api-live-demo.html)
-
-(Refresh update once a minute!)
 
 ## Installation and Upgrade
 The module requires Python 3.7 and runs smoothly up to and including Python 3.12.
