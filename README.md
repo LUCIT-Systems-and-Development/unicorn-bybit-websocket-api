@@ -379,10 +379,10 @@ Run in bash:
 `pip install https://github.com/LUCIT-Systems-and-Development/unicorn-bybit-websocket-api/archive/$(curl -s https://api.github.com/repos/LUCIT-Systems-and-Development/unicorn-bybit-websocket-api/releases/latest | grep -oP '"tag_name": "\K(.*)(?=")').tar.gz --upgrade`
 
 #### Windows
-Use the below command with the version (such as 2.8.0) you determined 
+Use the below command with the version (such as 0.0.0) you determined 
 [here](https://github.com/LUCIT-Systems-and-Development/unicorn-bybit-websocket-api/releases/latest):
 
-`pip install https://github.com/LUCIT-Systems-and-Development/unicorn-bybit-websocket-api/archive/2.8.0.tar.gz --upgrade`
+`pip install https://github.com/LUCIT-Systems-and-Development/unicorn-bybit-websocket-api/archive/0.0.0.tar.gz --upgrade`
 ### From the latest source (dev-stage) with PIP from [GitHub](https://github.com/LUCIT-Systems-and-Development/unicorn-bybit-websocket-api)
 This is not a release version and can not be considered to be stable!
 

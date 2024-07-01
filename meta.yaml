@@ -1,5 +1,5 @@
 {% set name = "unicorn-bybit-websocket-api" %}
-{% set version = "2.8.0" %}
+{% set version = "0.0.0" %}
 
 package:
   name: {{ name|lower }}
