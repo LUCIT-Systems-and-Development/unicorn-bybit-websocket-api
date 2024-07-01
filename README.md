@@ -39,7 +39,7 @@ Part of '[UNICORN Trading Suite](https://www.lucit.tech/unicorn-trading-suite.ht
 
 ## Get a UNICORN Trading Suite License
 
-To run modules of the *UNICORN Trading Suite* you need a [valid license](https://medium.lucit.tech/how-to-obtain-and-use-a-unicorn-trading-suite-license-key-and-run-the-ubs-module-according-to-best-87b0088124a8#4ca4)!
+To run modules of the *UNICORN Trading Suite* you need a [valid license](https://medium.lucit.tech/how-to-obtain-and-use-a-unicorn-trading-suite-license-key-and-run-the-uts-module-according-to-best-87b0088124a8#4ca4)!
 
 ## Receive Data from Bybit WebSockets
 
@@ -203,7 +203,7 @@ provides an API to the Bybit Websocket API`s of
 
 - No memory leaks from Python version 3.7 to 3.12!
 
-- The full [UBS stack](https://www.lucit.tech/unicorn-trading-suite.html) is delivered as a compiled C extension for 
+- The full [UTS stack](https://www.lucit.tech/unicorn-trading-suite.html) is delivered as a compiled C extension for 
   maximum performance.
 
 - [Supported exchanges](https://github.com/LUCIT-Systems-and-Development/unicorn-bybit-websocket-api/wiki/Bybit-websocket-endpoint-configuration-overview): 
@@ -399,7 +399,7 @@ This is not a release version and can not be considered to be stable!
 - [Look here!](https://github.com/LUCIT-Systems-and-Development/unicorn-bybit-websocket-api/tree/master/examples/)
 
 ## Howto
-- [How to Obtain and Use a Unicorn Trading Suite License Key and Run the UBS Module According to Best Practice](https://medium.lucit.tech/how-to-obtain-and-use-a-unicorn-trading-suite-license-key-and-run-the-ubs-module-according-to-best-87b0088124a8)
+- [How to Obtain and Use a Unicorn Trading Suite License Key and Run the UTS Module According to Best Practice](https://medium.lucit.tech/how-to-obtain-and-use-a-unicorn-trading-suite-license-key-and-run-the-uts-module-according-to-best-87b0088124a8)
 
 
 ## Project Homepage
