@@ -430,7 +430,7 @@ This is not a release version and can not be considered to be stable!
 
 ## Receive Notifications
 To receive notifications on available updates you can 
-[![watch](https://raw.githubusercontent.com/lucit-systems-and-development/unicorn-bybit-websocket-api/master/images/misc/watch.png)](https://github.com/LUCIT-Systems-and-Development/unicorn-bybit-websocket-api/watchers) 
+[![watch](https://raw.githubusercontent.com/lucit-systems-and-development/unicorn-bybit-websocket-api/master/images/misc/gh-watch.png)](https://github.com/LUCIT-Systems-and-Development/unicorn-bybit-websocket-api/watchers) 
 the repository on [GitHub](https://github.com/LUCIT-Systems-and-Development/unicorn-bybit-websocket-api), write your 
 [own script](https://github.com/LUCIT-Systems-and-Development/unicorn-bybit-websocket-api/blob/master/examples/_archive/example_version_of_this_package.py) 
 with using 
