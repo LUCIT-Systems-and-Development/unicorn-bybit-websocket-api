@@ -308,7 +308,7 @@ for [ICINGA](https://exchange.icinga.com/LUCIT/check_lucit_collector)/Nagios
 
 - Excessively tested on Linux, Mac and Windows on x86, arm32, arm64, ...
 
-If you like the project, please [![star](https://raw.githubusercontent.com/lucit-systems-and-development/unicorn-bybit-websocket-api/master/images/misc/star.png)](https://github.com/LUCIT-Systems-and-Development/unicorn-bybit-websocket-api/stargazers) it on 
+If you like the project, please [![star](https://raw.githubusercontent.com/lucit-systems-and-development/unicorn-bybit-websocket-api/master/images/misc/gh-star.png)](https://github.com/LUCIT-Systems-and-Development/unicorn-bybit-websocket-api/stargazers) it on 
 [GitHub](https://github.com/LUCIT-Systems-and-Development/unicorn-bybit-websocket-api)!
 
 ## Live Demo
