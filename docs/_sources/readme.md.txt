@@ -1,4 +1,4 @@
-[![Get a UNICORN Trading Suite License](https://raw.githubusercontent.com/LUCIT-Systems-and-Development/unicorn-trading-suite/master/images/logo/LUCIT-UBS-License-Offer.png)](https://shop.lucit.services/software/unicorn-trading-suite)
+[![Get a UNICORN Trading Suite License](https://raw.githubusercontent.com/LUCIT-Systems-and-Development/unicorn-binance-suite/master/images/logo/LUCIT-UTS-License-Offer.png)](https://shop.lucit.services/software/unicorn-trading-suite)
 
 [![GitHub Release](https://img.shields.io/github/release/LUCIT-Systems-and-Development/unicorn-bybit-websocket-api.svg?label=github)](https://github.com/LUCIT-Systems-and-Development/unicorn-bybit-websocket-api/releases)
 [![GitHub Downloads](https://img.shields.io/github/downloads/LUCIT-Systems-and-Development/unicorn-bybit-websocket-api/total?color=blue)](https://github.com/LUCIT-Systems-and-Development/unicorn-bybit-websocket-api/releases)
@@ -25,12 +25,12 @@
 
 # UNICORN Bybit WebSocket API
 
-[Description](#description) | [Live Demo](#live-demo) | [Installation](#installation-and-upgrade) | [How To](#howto) |
-[Documentation](#documentation) | [Examples](#examples) | [Change Log](#change-log) | [Wiki](#wiki) | [Social](#social) |
-[Notifications](#receive-notifications) | [Bugs](#how-to-report-bugs-or-suggest-improvements) | 
+[Description](#description) | [Installation](#installation-and-upgrade) | [How To](#howto) | 
+[Documentation](#documentation) | [Examples](#examples) | [Change Log](#change-log) | [Wiki](#wiki) | 
+[Social](#social) | [Notifications](#receive-notifications) | [Bugs](#how-to-report-bugs-or-suggest-improvements) | 
 [Contributing](#contributing) | [Disclaimer](#disclaimer) | [Commercial Support](#commercial-support)
 
-A Python SDK by [LUCIT](https://www.lucit.tech) to use the Bybit Websocket API`s (+testnet) in a simple, fast, flexible, robust and 
+A Python SDK by [LUCIT](https://www.lucit.tech) to use the Bybit Websocket API`s (live+testnet) in a simple, fast, flexible, robust and 
 fully-featured way. 
 
 Part of '[UNICORN Trading Suite](https://www.lucit.tech/unicorn-trading-suite.html)'.
@@ -39,7 +39,7 @@ Part of '[UNICORN Trading Suite](https://www.lucit.tech/unicorn-trading-suite.ht
 
 ## Get a UNICORN Trading Suite License
 
-To run modules of the *UNICORN Trading Suite* you need a [valid license](https://medium.lucit.tech/how-to-obtain-and-use-a-unicorn-trading-suite-license-key-and-run-the-ubs-module-according-to-best-87b0088124a8#4ca4)!
+To run modules of the *UNICORN Trading Suite* you need a [valid license](https://medium.lucit.tech/how-to-obtain-and-use-a-unicorn-trading-suite-license-key-and-run-the-uts-module-according-to-best-87b0088124a8#4ca4)!
 
 ## Receive Data from Bybit WebSockets
 
@@ -203,7 +203,7 @@ provides an API to the Bybit Websocket API`s of
 
 - No memory leaks from Python version 3.7 to 3.12!
 
-- The full [UBS stack](https://www.lucit.tech/unicorn-trading-suite.html) is delivered as a compiled C extension for 
+- The full [UTS stack](https://www.lucit.tech/unicorn-trading-suite.html) is delivered as a compiled C extension for 
   maximum performance.
 
 - [Supported exchanges](https://github.com/LUCIT-Systems-and-Development/unicorn-bybit-websocket-api/wiki/Bybit-websocket-endpoint-configuration-overview): 
@@ -286,11 +286,6 @@ and specific streams with
 - Available as a package via `pip` and `conda` as precompiled C extension with stub files for improved Intellisense 
   functions and source code for easier debugging of the source code. [To the installation.](#installation-and-upgrade)
 
-- [Monitoring API service](https://github.com/LUCIT-Systems-and-Development/unicorn-bybit-websocket-api/wiki/UNICORN-Monitoring-API-Service) 
-and a [check_command](https://exchange.icinga.com/LUCIT/check_lucit_collector) 
-for [ICINGA](https://exchange.icinga.com/LUCIT/check_lucit_collector)/Nagios 
-[![icinga2-demo](https://raw.githubusercontent.com/lucit-systems-and-development/unicorn-bybit-websocket-api/master/images/misc/icinga.png)](https://github.com/LUCIT-Systems-and-Development/unicorn-bybit-websocket-api/wiki/UNICORN-Monitoring-API-Service)
-
 - Integration of [test cases](https://github.com/LUCIT-Systems-and-Development/unicorn-bybit-websocket-api/actions/workflows/unit-tests.yml) and [examples](#examples).
 
 - Customizable base URL.
@@ -310,16 +305,6 @@ for [ICINGA](https://exchange.icinga.com/LUCIT/check_lucit_collector)/Nagios
 
 If you like the project, please [![star](https://raw.githubusercontent.com/lucit-systems-and-development/unicorn-bybit-websocket-api/master/images/misc/gh-star.png)](https://github.com/LUCIT-Systems-and-Development/unicorn-bybit-websocket-api/stargazers) it on 
 [GitHub](https://github.com/LUCIT-Systems-and-Development/unicorn-bybit-websocket-api)!
-
-## Live Demo
-This live demo script is streaming from [bybit.com](https://www.bybit.com) and runs on a *CCX13* virtual 
-machine of [HETZNER CLOUD](https://hetzner.cloud/?ref=rKgYRMq0l8fd)
-
-[Open live monitor!](https://www.lucit.tech/unicorn-bybit-websocket-api-live-demo.html)
-
-[![live-demo](https://ubwa-demo.lucit.tech/ps.png)](https://www.lucit.tech/unicorn-bybit-websocket-api-live-demo.html)
-
-(Refresh update once a minute!)
 
 ## Installation and Upgrade
 The module requires Python 3.7 and runs smoothly up to and including Python 3.12.
@@ -414,7 +399,7 @@ This is not a release version and can not be considered to be stable!
 - [Look here!](https://github.com/LUCIT-Systems-and-Development/unicorn-bybit-websocket-api/tree/master/examples/)
 
 ## Howto
-- [How to Obtain and Use a Unicorn Trading Suite License Key and Run the UBS Module According to Best Practice](https://medium.lucit.tech/how-to-obtain-and-use-a-unicorn-trading-suite-license-key-and-run-the-ubs-module-according-to-best-87b0088124a8)
+- [How to Obtain and Use a Unicorn Trading Suite License Key and Run the UTS Module According to Best Practice](https://medium.lucit.tech/how-to-obtain-and-use-a-unicorn-trading-suite-license-key-and-run-the-uts-module-according-to-best-87b0088124a8)
 
 
 ## Project Homepage
@@ -430,7 +415,7 @@ This is not a release version and can not be considered to be stable!
 
 ## Receive Notifications
 To receive notifications on available updates you can 
-[![watch](https://raw.githubusercontent.com/lucit-systems-and-development/unicorn-bybit-websocket-api/master/images/misc/watch.png)](https://github.com/LUCIT-Systems-and-Development/unicorn-bybit-websocket-api/watchers) 
+[![watch](https://raw.githubusercontent.com/lucit-systems-and-development/unicorn-bybit-websocket-api/master/images/misc/gh-watch.png)](https://github.com/LUCIT-Systems-and-Development/unicorn-bybit-websocket-api/watchers) 
 the repository on [GitHub](https://github.com/LUCIT-Systems-and-Development/unicorn-bybit-websocket-api), write your 
 [own script](https://github.com/LUCIT-Systems-and-Development/unicorn-bybit-websocket-api/blob/master/examples/_archive/example_version_of_this_package.py) 
 with using 
