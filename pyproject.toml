@@ -1,0 +1,47 @@
+[tool.poetry]
+name = "unicorn-bybit-websocket-api"
+version = "2.8.0"
+description = "A Python SDK by LUCIT to use the Bybit Websocket API`s in a simple, fast, flexible, robust and fully-featured way."
+authors = ["LUCIT Systems and Development <info@lucit.tech>"]
+license = "LSOSL - LUCIT Synergetic Open Source License"
+readme = "README.md"
+homepage = "https://www.lucit.tech/unicorn-bybit-websocket-api.html"
+documentation = "https://unicorn-bybit-websocket-api.docs.lucit.tech"
+repository = "https://github.com/LUCIT-Systems-and-Development/unicorn-bybit-websocket-api"
+
+[tool.poetry.urls]
+'Howto' = 'https://www.lucit.tech/unicorn-bybit-websocket-api.html#howto'
+'Documentation' = 'https://unicorn-bybit-websocket-api.docs.lucit.tech'
+'Wiki' = 'https://github.com/LUCIT-Systems-and-Development/unicorn-bybit-websocket-api/wiki'
+'Author' = 'https://www.lucit.tech'
+'Changes' = 'https://unicorn-bybit-websocket-api.docs.lucit.tech/changelog.html'
+'License' = 'https://unicorn-bybit-websocket-api.docs.lucit.tech/license.html'
+'Issue Tracker' = 'https://github.com/LUCIT-Systems-and-Development/unicorn-bybit-websocket-api/issues'
+'Telegram' = 'https://t.me/unicorndevs'
+'Chat' = 'https://app.gitter.im/#/room/#unicorn-bybit-websocket-api:gitter.im'
+'Get Support' = 'https://www.lucit.tech/get-support.html'
+'LUCIT Online Shop' = 'https://shop.lucit.services/software/unicorn-trading-suite'
+
+[tool.poetry.dependencies]
+python = ">=3.7.0"
+cheroot = "*"
+colorama = "*"
+Cython = "*"
+flask = "*"
+flask_restful = "*"
+lucit-licensing-python = ">=1.8.2"
+psutil = "*"
+PySocks = "*"
+requests = ">=2.31.0"
+ujson = "*"
+websocket-client = "*"
+websockets = "11.0.3"
+
+[tool.poetry.dev-dependencies]
+
+[build-system]
+requires = ["setuptools", "wheel", "Cython", "pip", "mypy"]
+build-backend = "setuptools.build_meta"
+
+[tool.poetry.package_data]
+"unicorn_bybit_websocket_api" = ["*.so", "*.dll", "*.py", "*.pyd", "*.pyi"]
