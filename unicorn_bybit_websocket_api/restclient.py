@@ -45,7 +45,6 @@ class BybitWebSocketApiRestclient(object):
                  socks5_proxy_pass: Optional[str] = None,
                  socks5_proxy_ssl_verification: Optional[bool] = True,
                  stream_list: dict = None,
-                 ubra=None,  # Todo!
                  warn_on_update: Optional[bool] = True):
         """
         Create a restclient instance!

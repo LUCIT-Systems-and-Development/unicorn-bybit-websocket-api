@@ -24,13 +24,8 @@ from .connection_settings import CEX_EXCHANGES, CONNECTION_SETTINGS
 from .exceptions import *
 from .restclient import BybitWebSocketApiRestclient
 from .sockets import BybitWebSocketApiSocket
-from unicorn_binance_rest_api import BinanceRestApiManager, BinanceAPIException
-from unicorn_fy.unicorn_fy import UnicornFy
-from cheroot import wsgi
 from collections import deque
 from datetime import datetime, timezone
-from flask import Flask, redirect
-from flask_restful import Api
 from operator import itemgetter
 from typing import Optional, Union, Callable, List, Set
 try:
@@ -113,8 +108,7 @@ class BybitWebSocketApiManager(threading.Thread):
     :param show_secrets_in_logs: set to True to show secrets like listen_key, api_key or api_secret in log file
                                  (default=False)
     :type show_secrets_in_logs: bool
-    :param output_default: set to "dict" to convert the received raw data to a python dict, set to "UnicornFy" to
-                           convert with `UnicornFy <https://github.com/LUCIT-Systems-and-Development/unicorn-fy>`__
+    :param output_default: set to "dict" to convert the received raw data to a python dict
                            - otherwise with the default setting "raw_data" the output remains unchanged and gets
                            delivered as received from the endpoints. Change this for a specific stream with the `output`
                            parameter of `create_stream()` and `replace_stream()`
@@ -192,15 +186,13 @@ class BybitWebSocketApiManager(threading.Thread):
     :param lucit_license_token: The `license_token` of your UNICORN Binance Suite license from
                                 https://shop.lucit.services/software/unicorn-trading-suite
     :type lucit_license_token:  str
-    :param ubra_manager: Provide a shared unicorn_binance_rest_api.manager instance
-    :type ubra_manager: BinanceRestApiManager
     """
 
     def __init__(self,
                  process_stream_data: Optional[Callable] = None,
                  process_stream_data_async: Optional[Callable] = None,
                  process_asyncio_queue: Optional[Callable] = None,
-                 exchange: str = "binance.com",
+                 exchange: str = "bybit.com",
                  warn_on_update: bool = True,
                  restart_timeout: int = 6,
                  show_secrets_in_logs: bool = False,
@@ -227,8 +219,7 @@ class BybitWebSocketApiManager(threading.Thread):
                  lucit_api_secret: str = None,
                  lucit_license_ini: str = None,
                  lucit_license_profile: str = None,
-                 lucit_license_token: str = None,
-                 ubra_manager: BinanceRestApiManager = None):
+                 lucit_license_token: str = None):
         threading.Thread.__init__(self)
         self.name = __app_name__
         self.version = __version__
@@ -238,7 +229,6 @@ class BybitWebSocketApiManager(threading.Thread):
                     f"{str(platform.system())} {str(platform.release())} for exchange {exchange} started ...")
         self.debug = debug
         logger.info(f"Debug is {self.debug}")
-        self.ubra = ubra_manager
 
         self.lucit_api_secret = lucit_api_secret
         self.lucit_license_ini = lucit_license_ini
@@ -250,7 +240,7 @@ class BybitWebSocketApiManager(threading.Thread):
                                          license_token=self.lucit_license_token,
                                          parent_shutdown_function=self.stop_manager,
                                          program_used=self.name,
-                                         needed_license_type="unicorn-trading-suite",
+                                         needed_license_type="UNICORN-BINANCE-SUITE",
                                          start=True)
         licensing_exception = self.llm.get_license_exception()
         if licensing_exception is not None:
@@ -308,9 +298,7 @@ class BybitWebSocketApiManager(threading.Thread):
         self.restful_base_uri = restful_base_uri
         self.exchange_type: Literal['cex', 'dex', None] = exchange_type
         if self.exchange_type is None:
-            if self.exchange in DEX_EXCHANGES:
-                self.exchange_type = "dex"
-            elif self.exchange in CEX_EXCHANGES:
+            if self.exchange in CEX_EXCHANGES:
                 self.exchange_type = "cex"
             else:
                 logger.critical(f"BybitWebSocketApiManager.is_exchange_type() - Can not determine exchange type for"
@@ -398,7 +386,6 @@ class BybitWebSocketApiManager(threading.Thread):
         self.ping_interval_default = ping_interval_default
         self.ping_timeout_default = ping_timeout_default
         self.replacement_text = "***SECRET_REMOVED***"
-        self.api = BybitWebSocketApiApi(manager=self)
         self.warn_on_update = warn_on_update
         if warn_on_update and self.is_update_available():
             update_msg = f"Release {self.name}_" + self.get_latest_version() + " is available, " \
@@ -407,17 +394,17 @@ class BybitWebSocketApiManager(threading.Thread):
             print(update_msg)
             logger.warning(update_msg)
         self.restclient = BybitWebSocketApiRestclient(debug=self.debug,
-                                                        disable_colorama=self.disable_colorama,
-                                                        exchange=self.exchange,
-                                                        lucit_api_secret=self.lucit_api_secret,
-                                                        lucit_license_ini=self.lucit_license_ini,
-                                                        lucit_license_profile=self.lucit_license_profile,
-                                                        lucit_license_token=self.lucit_license_token,
-                                                        socks5_proxy_server=self.socks5_proxy_server,
-                                                        socks5_proxy_user=self.socks5_proxy_user,
-                                                        socks5_proxy_pass=self.socks5_proxy_pass,
-                                                        stream_list=self.stream_list,
-                                                        warn_on_update=self.warn_on_update)
+                                                      disable_colorama=self.disable_colorama,
+                                                      exchange=self.exchange,
+                                                      lucit_api_secret=self.lucit_api_secret,
+                                                      lucit_license_ini=self.lucit_license_ini,
+                                                      lucit_license_profile=self.lucit_license_profile,
+                                                      lucit_license_token=self.lucit_license_token,
+                                                      socks5_proxy_server=self.socks5_proxy_server,
+                                                      socks5_proxy_user=self.socks5_proxy_user,
+                                                      socks5_proxy_pass=self.socks5_proxy_pass,
+                                                      stream_list=self.stream_list,
+                                                      warn_on_update=self.warn_on_update)
         self.start()
 
     def __enter__(self):
@@ -474,7 +461,7 @@ class BybitWebSocketApiManager(threading.Thread):
         while self.is_stop_request(stream_id=stream_id) is False \
                 and self.is_crash_request(stream_id=stream_id) is False:
             try:
-                async with BinanceWebSocketApiSocket(self, stream_id, channels, markets) as socket:
+                async with BybitWebSocketApiSocket(self, stream_id, channels, markets) as socket:
                     if socket is not None:
                         await socket.start_socket()
                     if self.is_stop_request(stream_id=stream_id) is False:
@@ -1185,7 +1172,7 @@ class BybitWebSocketApiManager(threading.Thread):
                             and self.stream_list[stream_id]['status'] != "stopped" \
                             and not self.stream_list[stream_id]['status'].startswith("crashed"):
                         await asyncio.sleep(2)
-                except BinanceAPIException as error_msg:
+                except Exception as error_msg:
                     logger.critical(f"BybitWebSocketApiManager._ping_listen_key(stream_id={stream_id}) - "
                                     f"BinanceAPIException - Not able to ping the listen_key - error: {error_msg}")
                     if "IP banned" in str(error_msg):
@@ -1220,59 +1207,6 @@ class BybitWebSocketApiManager(threading.Thread):
         except Exception as error_msg:
             logger.critical(f"BybitWebSocketApiManager._handle_task_result() - Exception({error_msg}) raised by task "
                             f"= {task}")
-
-    def _start_monitoring_api_thread(self, host, port, warn_on_update) -> bool:
-        """
-        Threaded method that servces the monitoring api
-
-        :param host: IP or hostname to use
-        :type host: str
-        :param port: Port to use
-        :type port: int
-        :param warn_on_update: Should the monitoring system report available updates?
-        :type warn_on_update: bool
-
-        :return: bool
-        """
-        logger.info("BybitWebSocketApiManager._start_monitoring_api_thread() - Starting monitoring API service ...")
-        app = Flask(__name__)
-
-        @app.route('/')
-        @app.route('/status/')
-        def redirect_to_wiki():
-            logger.info("BybitWebSocketApiManager._start_monitoring_api_thread() 200 - "
-                        "Visit https://github.com/LUCIT-Systems-and-Development/unicorn-bybit-websocket-api/wiki/UNICORN-"
-                        "Monitoring-API-Service for further information!")
-            return redirect("https://github.com/LUCIT-Systems-and-Development/unicorn-bybit-websocket-api/wiki/"
-                            "UNICORN-Monitoring-API-Service", code=302)
-
-        api = Api(app)
-        api.add_resource(BinanceWebSocketApiRestServer,
-                         "/status/<string:statusformat>/",
-                         "/status/<string:statusformat>/<string:checkcommandversion>",
-                         resource_class_kwargs={'handler_binance_websocket_api_manager': self,
-                                                'warn_on_update': warn_on_update})
-        try:
-            with app.app_context():
-                dispatcher = wsgi.PathInfoDispatcher({'/': app})
-                self.monitoring_api_server = wsgi.WSGIServer((host, port), dispatcher)
-                self.monitoring_api_server.start()
-        except RuntimeError as error_msg:
-            logger.critical("BybitWebSocketApiManager._start_monitoring_api_thread() - Monitoring API service is "
-                            "going down! - error_msg: RuntimeError - " + str(error_msg))
-            self.stop_monitoring_api()
-            return False
-        except ResourceWarning as error_msg:
-            logger.critical("BybitWebSocketApiManager._start_monitoring_api_thread() - Monitoring API service is "
-                            "going down! - error_msg: ResourceWarning - " + str(error_msg))
-            self.stop_monitoring_api()
-            return False
-        except OSError as error_msg:
-            logger.critical("BybitWebSocketApiManager._start_monitoring_api_thread() - Monitoring API service is "
-                            "going down! - error_msg: OSError - " + str(error_msg))
-            self.stop_monitoring_api()
-            return False
-        return True
 
     def add_payload_to_stream(self, stream_id=None, payload: dict = None):
         """
@@ -2737,170 +2671,6 @@ class BybitWebSocketApiManager(threading.Thread):
         """
         return self.keep_max_received_last_second_entries
 
-    def get_monitoring_status_icinga(self, check_command_version=False, warn_on_update=True):
-        """
-        Get status and perfdata to monitor and collect metrics with ICINGA/Nagios
-
-        status: OK, WARNING, CRITICAL
-        - WARNING: on restarts, available updates
-        - CRITICAL: crashed streams
-
-        perfdata:
-        - average receives per second since last status check
-        - average speed per second since last status check
-        - total received bytes since start
-        - total received length since start
-        - stream_buffer size
-        - stream_buffer length
-        - reconnects
-        - uptime
-
-        :param check_command_version: is the version of the calling `check_command <https://github.com/LUCIT-Systems-and-Development/check_lucit_collector.py>`__
-        :type check_command_version: str
-        :param warn_on_update: set to `False` to disable the update warning
-        :type warn_on_update: bool
-        :return: dict (text, time, return_code)
-        """
-        result = self.get_monitoring_status_plain(check_command_version=check_command_version,
-                                                  warn_on_update=warn_on_update)
-        if len(result['update_msg']) > 0 or len(result['status_msg']) > 0:
-            text_msg = " -" + str(result['status_msg']) + str(result['update_msg'])
-        else:
-            text_msg = ""
-        check_message = "BINANCE WEBSOCKETS (" + self.exchange + ") - " + result['status_text'] + ": O:" + \
-                        str(result['active_streams']) + \
-                        "/R:" + str(result['restarting_streams']) + "/C:" + str(result['crashed_streams']) + "/S:" + \
-                        str(result['stopped_streams']) + text_msg + " | " + \
-                        "active streams=" + str(result['active_streams']) + ";;;0 " + \
-                        "average_receives_per_second=" + str(result['average_receives_per_second']) + \
-                        ";;;0 current_receiving_speed_per_second=" + str(result['average_speed_per_second']) + \
-                        "KB;;;0 total_received_length=" + str(result['total_received_length']) + "c;;;0 total_" \
-                        "received_size=" + str(result['total_received_mb']) + "MB;;;0 stream_buffer_size=" + \
-                        str(result['stream_buffer_mb']) + "MB;;;0 stream_buffer_length=" + \
-                        str(result['stream_buffer_items']) + ";;;0 reconnects=" + str(result['reconnects']) + "c;;;0 " \
-                        "uptime_days=" + str(result['uptime']) + "c;;;0"
-        status = {'text': check_message,
-                  'time': int(result['timestamp']),
-                  'return_code': result['return_code']}
-        return status
-
-    def get_monitoring_status_plain(self, check_command_version=False, warn_on_update=True):
-        """
-        Get plain monitoring status data:
-        active_streams, crashed_streams, restarting_streams, stopped_streams, return_code, status_text,
-        timestamp, update_msg, average_receives_per_second, average_speed_per_second, total_received_mb,
-        stream_buffer_items, stream_buffer_mb, reconnects, uptime
-
-        :param check_command_version: is the version of the calling `check_command <https://github.com/LUCIT-Systems-and-Development/check_lucit_collector.py>`__
-        :type check_command_version: False or str
-        :param warn_on_update: set to `False` to disable the update warning
-        :type warn_on_update: bool
-        :return: dict
-        """
-        result = {'active_streams': 0,
-                  'crashed_streams': 0,
-                  'restarting_streams': 0,
-                  'highest_restart_per_stream_last_hour': 0,
-                  'return_code': 0,
-                  'status_text': "OK",
-                  'status_msg': "",
-                  'stopped_streams': 0,
-                  'timestamp': time.time(),
-                  'update_msg': ""}
-        time_period = result['timestamp'] - self.last_monitoring_check
-        timestamp_last_hour = time.time() - (60*60)
-        is_update_available_unicorn_fy = UnicornFy().is_update_available()
-        if check_command_version:
-            is_update_available_check_command = self.is_update_available_check_command(
-                                                                            check_command_version=check_command_version)
-        else:
-            is_update_available_check_command = True
-        with self.stream_list_lock:
-            logger.debug(f"BybitWebSocketApiManager.get_monitoring_status_plain() - `stream_list_lock` "
-                         f"was entered!")
-            for stream_id in self.stream_list:
-                stream_restarts_last_hour = 0
-                for reconnect in self.stream_list[stream_id]['logged_reconnects']:
-                    if reconnect > timestamp_last_hour:
-                        stream_restarts_last_hour += 1
-                if stream_restarts_last_hour > result['highest_restart_per_stream_last_hour']:
-                    result['highest_restart_per_stream_last_hour'] = stream_restarts_last_hour
-            for stream_id in self.stream_list:
-                if self.stream_list[stream_id]['status'] == "running":
-                    result['active_streams'] += 1
-                elif self.stream_list[stream_id]['status'] == "stopped":
-                    result['stopped_streams'] += 1
-                elif self.stream_list[stream_id]['status'] == "restarting":
-                    result['restarting_streams'] += 1
-                elif "crashed" in self.stream_list[stream_id]['status']:
-                    result['crashed_streams'] += 1
-            logger.debug(f"BybitWebSocketApiManager.get_monitoring_status_plain() - Leaving `stream_list_lock`!")
-        if self.is_update_available() and is_update_available_unicorn_fy and is_update_available_check_command:
-            result['update_msg'] = " Update available: UNICORN Bybit WebSocket API, UnicornFy and " \
-                                   "check_lucit_collector.py!"
-            if warn_on_update is True:
-                result['status_text'] = "WARNING"
-                result['return_code'] = 1
-        elif self.is_update_available() and is_update_available_unicorn_fy:
-            result['update_msg'] = " Update available: UNICORN Bybit WebSocket API and UnicornFy"
-            if warn_on_update is True:
-                result['status_text'] = "WARNING"
-                result['return_code'] = 1
-        elif self.is_update_available() and is_update_available_check_command:
-            result['update_msg'] = " Update available: UNICORN Bybit WebSocket API and check_lucit_collector.py!"
-            if warn_on_update is True:
-                result['status_text'] = "WARNING"
-                result['return_code'] = 1
-        elif is_update_available_unicorn_fy and is_update_available_check_command:
-            result['update_msg'] = " Update available: UnicornFy and check_lucit_collector.py!"
-            if warn_on_update is True:
-                result['status_text'] = "WARNING"
-                result['return_code'] = 1
-        elif self.is_update_available():
-            result['update_msg'] = " Update " + str(self.get_latest_version()) + " available!"
-            if warn_on_update is True:
-                result['status_text'] = "WARNING"
-                result['return_code'] = 1
-        elif is_update_available_unicorn_fy:
-            result['update_msg'] = " Update UnicornFy " + str(UnicornFy().get_latest_version()) + " available!"
-            if warn_on_update is True:
-                result['status_text'] = "WARNING"
-                result['return_code'] = 1
-        elif is_update_available_check_command:
-            result['update_msg'] = " Update `check_lucit_collector.py` " + \
-                                   str(self.get_latest_version_check_command()) + " available!"
-            if warn_on_update is True:
-                result['status_text'] = "WARNING"
-                result['return_code'] = 1
-
-        if result['highest_restart_per_stream_last_hour'] >= 10:
-            result['status_text'] = "CRITICAL"
-            result['return_code'] = 2
-            result['status_msg'] = " Restart rate per stream last hour: " + \
-                                   str(result['highest_restart_per_stream_last_hour'])
-        elif result['crashed_streams'] > 0:
-            result['status_text'] = "CRITICAL"
-            result['return_code'] = 2
-        elif result['highest_restart_per_stream_last_hour'] >= 3:
-            result['status_text'] = "WARNING"
-            result['return_code'] = 1
-            result['status_msg'] = " Restart rate per stream last hour: " + \
-                                   str(result['highest_restart_per_stream_last_hour'])
-        result['average_receives_per_second'] = ((self.total_receives - self.monitoring_total_receives) /
-                                                 time_period).__round__(2)
-        result['average_speed_per_second'] = (((self.total_received_bytes - self.monitoring_total_received_bytes) /
-                                               time_period) / 1024).__round__(2)
-        result['total_received_mb'] = (self.get_total_received_bytes() / (1024 * 1024)).__round__(2)
-        result['total_received_length'] = self.total_receives
-        result['stream_buffer_items'] = str(self.get_stream_buffer_length())
-        result['stream_buffer_mb'] = (self.get_stream_buffer_byte_size() / (1024 * 1024)).__round__(4)
-        result['reconnects'] = self.get_reconnects()
-        self.monitoring_total_receives = self.get_total_receives()
-        self.monitoring_total_received_bytes = self.get_total_received_bytes()
-        self.last_monitoring_check = result['timestamp']
-        result['uptime'] = ((result['timestamp'] - self.start_time) / (60*60*24)).__round__(3)
-        return result
-
     @staticmethod
     def get_new_uuid_id() -> str:
         """
@@ -3345,19 +3115,6 @@ class BybitWebSocketApiManager(threading.Thread):
         return self.version
 
     @staticmethod
-    def get_version_unicorn_fy():
-        """
-        Get the package/module version of `UnicornFy <https://github.com/LUCIT-Systems-and-Development/unicorn-fy>`__
-
-        :return: str
-        """
-        from unicorn_fy.unicorn_fy import UnicornFy
-
-        unicorn_fy = UnicornFy()
-
-        return unicorn_fy.get_version()
-
-    @staticmethod
     def help():
         """
         Help in iPython
@@ -3541,15 +3298,6 @@ class BybitWebSocketApiManager(threading.Thread):
             return False
         else:
             return True
-
-    @staticmethod
-    def is_update_available_unicorn_fy():
-        """
-        Is a new release of `UnicornFy <https://github.com/LUCIT-Systems-and-Development/unicorn-fy>`__ available?
-
-        :return: bool
-        """
-        return UnicornFy().is_update_available()
 
     def is_update_available_check_command(self, check_command_version=None):
         """

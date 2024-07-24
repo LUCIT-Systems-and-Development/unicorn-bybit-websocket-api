@@ -195,7 +195,7 @@ This should be known by everyone using this lib:
 The Python package [UNICORN Bybit WebSocket API](https://www.lucit.tech/unicorn-bybit-websocket-api.html) 
 provides an API to the Bybit Websocket API`s of 
 [bybit](https://github.com/bybit-exchange/bybit-official-api-docs) 
-([+Testnet](https://testnet.bybit.com/)), 
+([+Testnet](https://testnet.bybit.com)), 
 [Bybit Margin](https://bybit-docs.github.io/apidocs/spot/en/#user-data-streams) 
 ([+Testnet](https://testnet.bybit.com/)), 
 

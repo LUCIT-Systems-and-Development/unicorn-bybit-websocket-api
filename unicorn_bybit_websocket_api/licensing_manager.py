@@ -73,7 +73,7 @@ class LucitLicensingManager(threading.Thread):
         self.request_interval = 20
         self.time_delta = 0.0
         self.url: str = "https://private.api.lucit.services/licensing/v1/"
-        if self.needed_license_type == "unicorn-trading-suite":
+        if self.needed_license_type == "unicorn-binance-suite":
             self.shop_product_url = "https://shop.lucit.services/software/unicorn-trading-suite"
         else:
             self.shop_product_url = "https://shop.lucit.services/software"
