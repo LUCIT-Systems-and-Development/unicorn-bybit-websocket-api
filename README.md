@@ -1,3 +1,5 @@
+# ***NOT READY FOR USE!!!***
+
 [![Get a UNICORN Trading Suite License](https://raw.githubusercontent.com/LUCIT-Systems-and-Development/unicorn-binance-suite/master/images/logo/LUCIT-UTS-License-Offer.png)](https://shop.lucit.services/software/unicorn-trading-suite)
 
 [![GitHub Release](https://img.shields.io/github/release/LUCIT-Systems-and-Development/unicorn-bybit-websocket-api.svg?label=github)](https://github.com/LUCIT-Systems-and-Development/unicorn-bybit-websocket-api/releases)
