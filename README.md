@@ -193,12 +193,8 @@ This should be known by everyone using this lib:
 
 ## Description
 The Python package [UNICORN Bybit WebSocket API](https://www.lucit.tech/unicorn-bybit-websocket-api.html) 
-provides an API to the Bybit Websocket API`s of 
-[bybit](https://github.com/bybit-exchange/bybit-official-api-docs) 
-([+Testnet](https://testnet.bybit.com)), 
-[Bybit Margin](https://bybit-docs.github.io/apidocs/spot/en/#user-data-streams) 
-([+Testnet](https://testnet.bybit.com/)), 
-
+provides an API to the [Bybit Websocket API`s](https://bybit-exchange.github.io/docs) of [Bybit](https://www.bybit.com)
+([+Testnet](https://testnet.bybit.com)).
 
 ### What are the benefits of the UNICORN Bybit WebSocket API?
 - Fully managed websockets and 100% auto-reconnect! Also handles maintenance windows!
@@ -210,9 +206,9 @@ provides an API to the Bybit Websocket API`s of
 
 - [Supported exchanges](https://github.com/LUCIT-Systems-and-Development/unicorn-bybit-websocket-api/wiki/Bybit-websocket-endpoint-configuration-overview): 
 
-| Exchange                                       | Exchange string     | WS                                                                                                                                   | WS API                                                                                                                               |
-|------------------------------------------------|---------------------|--------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------|
-| [Bybit](https://www.bybit.com)                 | `bybit.com`         | ![yes](https://raw.githubusercontent.com/lucit-systems-and-development/unicorn-bybit-websocket-api/master/images/misc/ok-icon.png) | ![yes](https://raw.githubusercontent.com/lucit-systems-and-development/unicorn-bybit-websocket-api/master/images/misc/ok-icon.png) |
+| Exchange                                   | Exchange string     | WS                                                                                                                                 | WS API                                                                                                                             |
+|--------------------------------------------|---------------------|------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------|
+| [Bybit](https://www.bybit.com)             | `bybit.com`         | ![yes](https://raw.githubusercontent.com/lucit-systems-and-development/unicorn-bybit-websocket-api/master/images/misc/ok-icon.png) | ![yes](https://raw.githubusercontent.com/lucit-systems-and-development/unicorn-bybit-websocket-api/master/images/misc/ok-icon.png) |
 | [Bybit Testnet](https://testnet.bybit.com) | `bybit.com-testnet` | ![yes](https://raw.githubusercontent.com/lucit-systems-and-development/unicorn-bybit-websocket-api/master/images/misc/ok-icon.png) | ![yes](https://raw.githubusercontent.com/lucit-systems-and-development/unicorn-bybit-websocket-api/master/images/misc/ok-icon.png) |
 
 
@@ -414,6 +410,9 @@ This is not a release version and can not be considered to be stable!
 - [Discussions](https://github.com/LUCIT-Systems-and-Development/unicorn-bybit-websocket-api/discussions)
 - [Gitter](https://gitter.im/unicorn-trading-suite/unicorn-bybit-websocket-api)
 - [https://t.me/unicorndevs](https://t.me/unicorndevs)
+- [Telegram - English API Community](https://t.me/BybitAPI)
+- [Telegram - Chinese API Community](https://t.me/BybitChineseAPI)
+- [Discord](https://discord.gg/VBwVwS2HUs)
 
 ## Receive Notifications
 To receive notifications on available updates you can 
@@ -430,7 +429,9 @@ Follow us on [LinkedIn](https://www.linkedin.com/company/lucit-systems-and-devel
 
 To receive news (like inspection windows/maintenance) about the Bybit API`s subscribe to their telegram groups: 
 
-- [https://t.me/BybitEnglish/2486566](https://t.me/BybitEnglish/2486566)
+- [Bybit English](https://t.me/BybitEnglish)
+- [Bybit Announcements](https://t.me/Bybit_Announcements)
+
 
 ## How to report Bugs or suggest Improvements?
 [List of planned features](https://github.com/LUCIT-Systems-and-Development/unicorn-bybit-websocket-api/issues?q=is%3Aissue+is%3Aopen+label%3Aenhancement) - click ![thumbs-up](https://raw.githubusercontent.com/lucit-systems-and-development/unicorn-bybit-websocket-api/master/images/misc/thumbup.png) if you need one of them or suggest a new feature!
