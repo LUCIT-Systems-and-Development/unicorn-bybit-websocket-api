@@ -21,6 +21,7 @@
 
 from typing import Optional
 import logging
+import requests
 import threading
 
 
@@ -67,3 +68,8 @@ class BybitWebSocketApiRestclient(object):
         self.stream_list = stream_list
         self.warn_on_update = warn_on_update
         self.sigterm = False
+
+    def get_symbols(self):
+        response = requests.get("https://api.bybit.com/v2/public/symbols")
+        data = response.json()
+        return data

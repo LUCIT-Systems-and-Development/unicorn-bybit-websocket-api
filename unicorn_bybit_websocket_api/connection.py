@@ -41,8 +41,8 @@ class BybitWebSocketApiConnection(object):
                  manager,
                  stream_id,
                  channels,
-                 markets,
-                 symbols):
+                 endpoint,
+                 markets):
         self.manager = manager
         self.stream_id = copy.deepcopy(stream_id)
         self.api_key = copy.deepcopy(self.manager.stream_list[self.stream_id]['api_key'])
@@ -51,21 +51,20 @@ class BybitWebSocketApiConnection(object):
         self.ping_timeout = copy.deepcopy(self.manager.stream_list[self.stream_id]['ping_timeout'])
         self.close_timeout = copy.deepcopy(self.manager.stream_list[self.stream_id]['close_timeout'])
         self.channels = copy.deepcopy(channels)
+        self.endpoint = copy.deepcopy(endpoint)
         self.markets = copy.deepcopy(markets)
-        self.symbols = copy.deepcopy(symbols)
         self.websocket = None
-        self.api = copy.deepcopy(self.manager.stream_list[self.stream_id]['api'])
-        self.add_timeout = True if "!userData" in f"{channels}{markets}" or self.api is True else False
+        self.add_timeout = False
         self.timeout_disabled = False
 
     async def __aenter__(self):
         logger.debug(f"Entering with-context of BybitWebSocketApiConnection() ...")
         self.raise_exceptions()
         uri = self.manager.create_websocket_uri(self.channels,
+                                                self.endpoint,
                                                 self.markets,
-                                                self.stream_id,
-                                                symbols=self.symbols,
-                                                api=self.manager.stream_list[self.stream_id]['api'])
+                                                self.stream_id)
+        self.manager.subscribe_to_stream(stream_id=self.stream_id, channels=self.channels, markets=self.markets)
         if uri is None:
             # cant get a valid URI, so this stream has to crash
             error_msg = "Probably no internet connection?"

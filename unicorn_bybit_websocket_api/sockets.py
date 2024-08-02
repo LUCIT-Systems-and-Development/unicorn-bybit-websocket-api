@@ -33,12 +33,12 @@ logger = __logger__
 
 
 class BybitWebSocketApiSocket(object):
-    def __init__(self, manager, stream_id, channels, markets):
+    def __init__(self, manager, stream_id, channels, endpoint, markets):
         self.manager = manager
         self.stream_id = stream_id
         self.channels = channels
+        self.endpoint = endpoint
         self.markets = markets
-        self.symbols = self.manager.stream_list[self.stream_id]['symbols']
         self.output = self.manager.stream_list[self.stream_id]['output']
         self.unicorn_fy = None
         self.exchange = manager.get_exchange()
@@ -67,8 +67,8 @@ class BybitWebSocketApiSocket(object):
             async with BybitWebSocketApiConnection(self.manager,
                                                    self.stream_id,
                                                    self.channels,
-                                                   self.markets,
-                                                   symbols=self.symbols) as self.websocket:
+                                                   self.endpoint,
+                                                   self.markets) as self.websocket:
                 if self.websocket is None:
                     raise StreamIsRestarting(stream_id=self.stream_id, reason="websocket is None")
                 if self.manager.stream_list[self.stream_id]['status'] == "restarting":
@@ -102,11 +102,10 @@ class BybitWebSocketApiSocket(object):
                             # https://github.com/binance-exchange/binance-official-api-docs/blob/5fccfd572db2f530e25e302c02be5dec12759cf9/CHANGELOG.md#2020-04-23
                             # Limit: max 5 messages per second inclusive pings/pong
                             # Websocket API does not seem to have this restriction!
-                            if self.manager.stream_list[self.stream_id]['api'] is False:
-                                max_subscriptions_per_second = self.manager.max_send_messages_per_second - \
-                                                               self.manager.max_send_messages_per_second_reserve
-                                idle_time = 1/max_subscriptions_per_second
-                                await asyncio.sleep(idle_time)
+                            max_subscriptions_per_second = self.manager.max_send_messages_per_second - \
+                                                           self.manager.max_send_messages_per_second_reserve
+                            idle_time = 1/max_subscriptions_per_second
+                            await asyncio.sleep(idle_time)
 
                         received_stream_data_json = await self.websocket.receive()
                         if received_stream_data_json is not None:
@@ -150,28 +149,6 @@ class BybitWebSocketApiSocket(object):
                                 received_stream_data = json.loads(received_stream_data_json)
                             else:
                                 received_stream_data = received_stream_data_json
-                            if self.manager.stream_list[self.stream_id]['api'] is True:
-                                return_response_by_request_id = None
-                                with self.manager.return_response_lock:
-                                    for request_id in self.manager.return_response:
-                                        if request_id in received_stream_data_json:
-                                            return_response_by_request_id = request_id
-                                            break
-                                if return_response_by_request_id is not None:
-                                    self.manager.return_response[return_response_by_request_id]['response_value'] = received_stream_data
-                                    self.manager.return_response[return_response_by_request_id]['event_return_response'].set()
-                                    continue
-                                process_by_request_id = None
-                                with self.manager.process_response_lock:
-                                    for request_id in self.manager.process_response:
-                                        if request_id in received_stream_data_json:
-                                            process_by_request_id = request_id
-                                            break
-                                if process_by_request_id is not None:
-                                    self.manager.process_response[process_by_request_id]['callback_function'](received_stream_data)
-                                    with self.manager.process_response_lock:
-                                        del self.manager.process_response[process_by_request_id]
-                                    continue
                             try:
                                 stream_buffer_name = self.manager.stream_list[self.stream_id]['stream_buffer_name']
                             except KeyError:

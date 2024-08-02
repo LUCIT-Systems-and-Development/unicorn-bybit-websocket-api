@@ -161,10 +161,8 @@ class BybitWebSocketApiManager(threading.Thread):
     :type restful_base_uri:  str
     :param websocket_base_uri: Override `websocket_base_uri`. Example: `ws://127.0.0.1:8765/`
     :type websocket_base_uri:  str
-    :param websocket_api_base_uri: Override `websocket_api_base_uri`. Example: `ws://127.0.0.1:8765/`
-    :type websocket_api_base_uri:  str
-    :param max_subscriptions_per_stream: Override the `max_subscriptions_per_stream` value. Example: 1024
-    :type max_subscriptions_per_stream:  int
+    :param max_subscriptions_per_stream_spot: Override the `max_subscriptions_per_stream_spot` value. Example: 1024
+    :type max_subscriptions_per_stream_spot:  int
     :param exchange_type: Override the exchange type. Valid options are: 'cex', 'dex'
     :type exchange_type:  str
     :param socks5_proxy_server: Set this to activate the usage of a socks5 proxy. Example: '127.0.0.1:9050'
@@ -196,7 +194,7 @@ class BybitWebSocketApiManager(threading.Thread):
                  warn_on_update: bool = True,
                  restart_timeout: int = 6,
                  show_secrets_in_logs: bool = False,
-                 output_default: Optional[Literal['dict', 'raw_data', 'UnicornFy']] = "raw_data",
+                 output_default: Optional[Literal['dict', 'raw_data']] = "raw_data",
                  enable_stream_signal_buffer: bool = False,
                  disable_colorama: bool = False,
                  stream_buffer_maxlen: Optional[int] = None,
@@ -208,8 +206,10 @@ class BybitWebSocketApiManager(threading.Thread):
                  debug: bool = False,
                  restful_base_uri: str = None,
                  websocket_base_uri: str = None,
-                 websocket_api_base_uri: str = None,
-                 max_subscriptions_per_stream: Optional[int] = None,
+                 max_subscriptions_per_stream_spot: Optional[int] = None,
+                 max_subscriptions_per_stream_linear: Optional[int] = None,
+                 max_subscriptions_per_stream_inverse: Optional[int] = None,
+                 max_subscriptions_per_stream_option: Optional[int] = None,
                  exchange_type: Literal['cex', 'dex', None] = None,
                  socks5_proxy_server: str = None,
                  socks5_proxy_user: str = None,
@@ -292,19 +292,13 @@ class BybitWebSocketApiManager(threading.Thread):
             self.stop_manager()
             raise UnknownExchange(error_msg=error_msg)
 
-        self.max_subscriptions_per_stream = max_subscriptions_per_stream or CONNECTION_SETTINGS[self.exchange][0]
-        self.websocket_base_uri = websocket_base_uri or CONNECTION_SETTINGS[self.exchange][1]
-        self.websocket_api_base_uri = websocket_api_base_uri or CONNECTION_SETTINGS[self.exchange][2]
-        self.restful_base_uri = restful_base_uri
-        self.exchange_type: Literal['cex', 'dex', None] = exchange_type
-        if self.exchange_type is None:
-            if self.exchange in CEX_EXCHANGES:
-                self.exchange_type = "cex"
-            else:
-                logger.critical(f"BybitWebSocketApiManager.is_exchange_type() - Can not determine exchange type for"
-                                f"exchange={str(self.exchange)}, resetting to default 'cex'")
-                self.exchange_type = "cex"
-        logger.info(f"Using exchange_type '{self.exchange_type}' ...")
+        self.websocket_base_uri = websocket_base_uri or CONNECTION_SETTINGS[self.exchange][0]
+        self.api_version = CONNECTION_SETTINGS[self.exchange][1]
+        self.args_limit = CONNECTION_SETTINGS[self.exchange][2]
+        self.max_subscriptions_per_stream_spot = max_subscriptions_per_stream_spot or CONNECTION_SETTINGS[self.exchange][3]
+        self.max_subscriptions_per_stream_linear = max_subscriptions_per_stream_linear or CONNECTION_SETTINGS[self.exchange][4]
+        self.max_subscriptions_per_stream_inverse = max_subscriptions_per_stream_inverse or CONNECTION_SETTINGS[self.exchange][5]
+        self.max_subscriptions_per_stream_option = max_subscriptions_per_stream_option or CONNECTION_SETTINGS[self.exchange][6]
 
         self.socks5_proxy_server = socks5_proxy_server
         if socks5_proxy_server is None:
@@ -350,7 +344,7 @@ class BybitWebSocketApiManager(threading.Thread):
         self.monitoring_api_server = None
         self.monitoring_total_received_bytes = 0
         self.monitoring_total_receives = 0
-        self.output_default: Optional[Literal['dict', 'raw_data', 'UnicornFy']] = output_default
+        self.output_default: Optional[Literal['dict', 'raw_data']] = output_default
         self.process_response = {}
         self.process_response_lock = threading.Lock()
         self.reconnects = 0
@@ -457,11 +451,11 @@ class BybitWebSocketApiManager(threading.Thread):
         await loop.shutdown_asyncgens()
         return True
 
-    async def _run_socket(self, stream_id, channels, markets) -> None:
+    async def _run_socket(self, stream_id, channels, endpoint, markets) -> None:
         while self.is_stop_request(stream_id=stream_id) is False \
                 and self.is_crash_request(stream_id=stream_id) is False:
             try:
-                async with BybitWebSocketApiSocket(self, stream_id, channels, markets) as socket:
+                async with BybitWebSocketApiSocket(self, stream_id, channels, endpoint, markets) as socket:
                     if socket is not None:
                         await socket.start_socket()
                     if self.is_stop_request(stream_id=stream_id) is False:
@@ -653,20 +647,17 @@ class BybitWebSocketApiManager(threading.Thread):
     def _add_stream_to_stream_list(self,
                                    stream_id=None,
                                    channels=None,
+                                   endpoint=None,
                                    markets=None,
                                    stream_label=None,
                                    stream_buffer_name: Union[Literal[False], str] = False,
                                    api_key=None,
                                    api_secret=None,
-                                   symbols=None,
-                                   output: Optional[Literal['dict', 'raw_data', 'UnicornFy']] = None,
+                                   output: Optional[Literal['dict', 'raw_data']] = None,
                                    ping_interval=None,
                                    ping_timeout=None,
                                    close_timeout=None,
-                                   provided_listen_key=None,
-                                   keep_listen_key_alive=True,
                                    stream_buffer_maxlen=None,
-                                   api=False,
                                    process_stream_data: Optional[Callable] = None,
                                    process_stream_data_async: Optional[Callable] = None,
                                    process_asyncio_queue: Optional[Callable] = None):
@@ -677,6 +668,8 @@ class BybitWebSocketApiManager(threading.Thread):
         :type stream_id: str
         :param channels: provide the channels to create the URI
         :type channels: str, list, set
+        :param endpoint: provide the endpoint path without the version ('public/linear', 'private', 'trade' ...)
+        :type endpoint: str
         :param markets: provide the markets to create the URI
         :type markets: str, list, set
         :param stream_label: provide a stream_label for the stream
@@ -690,13 +683,10 @@ class BybitWebSocketApiManager(threading.Thread):
         :type api_key: str
         :param api_secret: provide a valid Binance API secret
         :type api_secret: str
-        :param symbols: provide the symbols for isolated_margin user_data streams
-        :type symbols: str
         :param output: the default setting `raw_data` can be globally overwritten with the parameter
                        `output_default <https://unicorn-bybit-websocket-api.docs.lucit.tech/unicorn_bybit_websocket_api.html?highlight=output_default#module-unicorn_bybit_websocket_api.unicorn_bybit_websocket_api_manager>`__
                        of BybitWebSocketApiManager`. To overrule the `output_default` value for this specific stream,
-                       set `output` to "dict" to convert the received raw data to a python dict,  set to "UnicornFy" to
-                       convert with `UnicornFy <https://github.com/LUCIT-Systems-and-Development/unicorn-fy>`__ -
+                       set `output` to "dict" to convert the received raw data to a python dict -
                        otherwise with the default setting "raw_data" the output remains unchanged and gets delivered as
                        received from the endpoints
         :type output: str
@@ -724,10 +714,6 @@ class BybitWebSocketApiManager(threading.Thread):
                                      `stream_buffer`. The generic `stream_buffer` uses always the value of
                                      `BybitWebSocketApiManager()`.
         :type stream_buffer_maxlen: int or None
-        :param api: Setting this to `True` activates the creation of a Websocket API stream to send API requests via
-                    Websocket. Needs `api_key` and `api_secret` in combination. This type of stream can not be combined
-                    with a UserData stream or another public endpoint. (Default is `False`)
-        :type api: bool
         :param process_stream_data: Provide a function/method to process the received webstream data. The function
                             will be called instead of
                             `add_to_stream_buffer() <unicorn_bybit_websocket_api.html#unicorn_bybit_websocket_api.manager.BybitWebSocketApiManager.add_to_stream_buffer>`__
@@ -763,23 +749,19 @@ class BybitWebSocketApiManager(threading.Thread):
                                            'stream_id': copy.deepcopy(stream_id),
                                            'recent_socket_id': None,
                                            'channels': copy.deepcopy(channels),
+                                           'endpoint': copy.deepcopy(endpoint),
                                            'markets': copy.deepcopy(markets),
                                            'stream_label': copy.deepcopy(stream_label),
                                            'stream_buffer_name': copy.deepcopy(stream_buffer_name),
                                            'stream_buffer_maxlen': copy.deepcopy(stream_buffer_maxlen),
-                                           'symbols': copy.deepcopy(symbols),
                                            'output': copy.deepcopy(output),
                                            'subscriptions': 0,
                                            'payload': [],
-                                           'api': copy.deepcopy(api),
                                            'api_key': copy.deepcopy(api_key),
                                            'api_secret': copy.deepcopy(api_secret),
-                                           'dex_user_address': copy.deepcopy(self.dex_user_address),
                                            'ping_interval': copy.deepcopy(ping_interval),
                                            'ping_timeout': copy.deepcopy(ping_timeout),
                                            'close_timeout': copy.deepcopy(close_timeout),
-                                           'provided_listen_key': copy.deepcopy(provided_listen_key),
-                                           'keep_listen_key_alive': copy.deepcopy(keep_listen_key_alive),
                                            'status': 'starting',
                                            'start_time': time.time(),
                                            'processed_receives_total': 0,
@@ -808,11 +790,12 @@ class BybitWebSocketApiManager(threading.Thread):
             logger.debug(f"BybitWebSocketApiManager._add_stream_to_stream_list() - Leaving `stream_list_lock`!")
         logger.info("BybitWebSocketApiManager._add_stream_to_stream_list(" +
                     str(stream_id) + ", " + str(channels) + ", " + str(markets) + ", " + str(stream_label) + ", "
-                    + str(stream_buffer_name) + ", " + str(stream_buffer_maxlen) + ", " + str(symbols) + ")")
+                    + str(stream_buffer_name) + ", " + str(stream_buffer_maxlen) + ")")
 
     def _create_stream_thread(self,
                               stream_id,
                               channels,
+                              endpoint,
                               markets,
                               stream_buffer_name: Union[Literal[False], str] = False,
                               stream_buffer_maxlen=None):
@@ -823,6 +806,8 @@ class BybitWebSocketApiManager(threading.Thread):
         :type stream_id: str
         :param channels: provide the channels to create the URI
         :type channels: str, list, set
+        :param endpoint: provide the endpoint to create the URI
+        :type endpoint: str
         :param markets: provide the markets to create the URI
         :type markets: str, list, set
         :param stream_buffer_name: If `False` the data is going to get written to the default stream_buffer,
@@ -853,15 +838,14 @@ class BybitWebSocketApiManager(threading.Thread):
                 loop.set_debug(enabled=True)
             self.event_loops[stream_id] = loop
             self.asyncio_queue[stream_id] = asyncio.Queue()
-            if (self.stream_list[stream_id]['api'] is False
-                    and ("!userData" in self.stream_list[stream_id]['markets']
-                         or "!userData" in self.stream_list[stream_id]['channels'])):
-                logger.debug(f"BybitWebSocketApiManager._create_stream_thread({stream_id} - "
-                             f"Adding `_ping_listen_key({stream_id})` to asyncio loop ...")
-                loop.create_task(self._ping_listen_key(stream_id=stream_id))
+            # Todo: Task für ping starten
+            # loop.create_task(self._ping_listen_key(stream_id=stream_id))
             logger.debug(f"BybitWebSocketApiManager._create_stream_thread({stream_id} - "
                          f"Adding `_run_socket({stream_id})` to asyncio loop ...")
-            loop.run_until_complete(self._run_socket(stream_id=stream_id, channels=channels, markets=markets))
+            loop.run_until_complete(self._run_socket(stream_id=stream_id,
+                                                     channels=channels,
+                                                     endpoint=endpoint,
+                                                     markets=markets))
         except OSError as error_msg:
             logger.critical(f"BybitWebSocketApiManager._create_stream_thread({str(stream_id)} - OSError  - can not "
                             f"create stream - error_msg: {str(error_msg)}")
@@ -1418,133 +1402,20 @@ class BybitWebSocketApiManager(threading.Thread):
             if type(markets) is str:
                 markets = [markets]
         payload = []
-        if self.is_exchange_type("dex"):
-            if method == "subscribe" and channels is not False:
-                for channel in channels:
-                    add_payload = {"method": method,
-                                   "topic": channel}
-                    symbols = []
-                    if channel == "allMiniTickers" or \
-                            channel == "allTickers" or \
-                            channel == "blockheight":
-                        add_payload["symbols"] = ["$all"]
-                        payload.append(add_payload)
-                        continue
-                    if markets:
-                        for market in markets:
-                            if market == "allMiniTickers" or \
-                                    market == "allTickers" or \
-                                    market == "blockheight":
-                                add_payload_from_market = {"method": method,
-                                                           "topic": market,
-                                                           "symbols": ["$all"]}
-                                payload.append(add_payload_from_market)
-                                continue
-                            elif re.match(r'[a-zA-Z0-9]{41,43}', market) is not None:
-                                if self.stream_list[stream_id]['dex_user_address'] is None:
-                                    self.stream_list[stream_id]['dex_user_address'] = market
-                            else:
-                                symbols.append(market)
-                    try:
-                        if self.stream_list[stream_id]["dex_user_address"] is not None:
-                            add_payload["address"] = self.stream_list[stream_id]["dex_user_address"]
-                            payload.append(add_payload)
-                    except KeyError:
-                        pass
-                    if len(symbols) > 0:
-                        add_payload["symbols"] = symbols
-                        payload.append(add_payload)
-            elif method == "unsubscribe":
-                if markets:
-                    add_payload = {"method": method}
-                    for market in markets:
-                        if re.match(r'[a-zA-Z0-9]{41,43}', market) is not None:
-                            if self.stream_list[stream_id]['dex_user_address'] is None:
-                                with self.stream_list_lock:
-                                    logger.debug(f"BybitWebSocketApiManager.create_payload() - `stream_list_lock` "
-                                                 f"was entered!")
-                                    self.stream_list[stream_id]['dex_user_address'] = market
-                                    logger.debug(f"BybitWebSocketApiManager.create_payload() - Leaving "
-                                                 f"`stream_list_lock`!")
-                                markets.remove(market)
-                    if len(markets) > 0:
-                        add_payload["symbols"] = markets
-                        payload.append(add_payload)
-                if channels:
-                    for channel in channels:
-                        add_payload = {"method": method,
-                                       "topic": channel}
-                        payload.append(add_payload)
-            else:
-                logger.critical("BybitWebSocketApiManager.create_payload(" + str(stream_id) + ", "
-                                + str(channels) + ", " + str(markets) + ") - Allowed values for `method`: `subscribe` "
-                                "or `unsubscribe`!")
-                return None
-        elif self.is_exchange_type("cex"):
-            final_market = "@arr"
-            if markets:
-                for market in markets:
-                    if "arr@" in market:
-                        final_market = "@" + market
-            final_channel = "@arr"
-            if channels:
-                for channel in channels:
-                    if "arr@" in channel:
-                        final_channel = "@" + channel
-            if method == "subscribe":
-                params = []
-                for channel in channels:
-                    if "!" in channel:
-                        params.append(channel + final_market)
-                        continue
-                    else:
-                        for market in markets:
-                            if "!" in market:
-                                params.append(market + final_channel)
-                            else:
-                                params.append(market.lower() + "@" + channel)
-                if len(params) > 0:
-                    params = list(set(params))
-                    payload = self.split_payload(params, "SUBSCRIBE")
-            elif method == "unsubscribe":
-                if markets:
-                    params = []
-                    try:
-                        with self.stream_list_lock:
-                            logger.debug(f"BybitWebSocketApiManager.create_payload() - `stream_list_lock` "
-                                         f"was entered!")
-                            for channel in self.stream_list[stream_id]['channels']:
-                                if "!" in channel:
-                                    params.append(channel + final_market)
-                                else:
-                                    for market in markets:
-                                        params.append(market.lower() + "@" + channel)
-                            logger.debug(f"BybitWebSocketApiManager.create_payload() - Leaving "
-                                         f"`stream_list_lock`!")
-                        if len(params) > 0:
-                            payload = self.split_payload(params, "UNSUBSCRIBE")
-                    except KeyError:
-                        pass
-                if channels:
-                    params = []
-                    with self.stream_list_lock:
-                        logger.debug(f"BybitWebSocketApiManager.create_payload() - `stream_list_lock` "
-                                     f"was entered!")
-                        for market in self.stream_list[stream_id]['markets']:
-                            if "!" in market:
-                                params.append(market + final_channel)
-                            else:
-                                for channel in channels:
-                                    params.append(market.lower() + "@" + channel)
-                        logger.debug(f"BybitWebSocketApiManager.create_payload() - Leaving "
-                                     f"`stream_list_lock`!")
-                    if len(params) > 0:
-                        payload = self.split_payload(params, "UNSUBSCRIBE")
-            else:
-                logger.critical("BybitWebSocketApiManager.create_payload(" + str(stream_id) + ", "
-                                + str(channels) + ", " + str(markets) + ") - Allowed values for `method`: `subscribe` "
-                                "or `unsubscribe`!")
-                return None
+        if method == "subscribe":
+            for channel in channels:
+                params = {
+                    "op": "subscribe",
+                    "args": [f"{channel}.{symbol}" for symbol in markets]
+                }
+                payload.append(params)
+        elif method == "unsubscribe":
+            raise NotImplemented(f"Feature 'unsubscribe' is currently not available!")
+        else:
+            logger.critical(f"BybitWebSocketApiManager.create_payload(" + str(stream_id) + ", "
+                            + str(channels) + ", " + str(markets) + ") - Allowed values for `method`: `subscribe` "
+                            "or `unsubscribe`!")
+            return None
         logger.info("BybitWebSocketApiManager.create_payload(" + str(stream_id) + ", "
                     + str(channels) + ", " + str(markets) + ") - Payload: " + str(payload))
         logger.info("BybitWebSocketApiManager.create_payload(" + str(stream_id) + ", " + str(channels) + ", " +
@@ -1553,20 +1424,17 @@ class BybitWebSocketApiManager(threading.Thread):
 
     def create_stream(self,
                       channels: Union[str, List[str], Set[str], None] = None,
+                      endpoint: str = None,
                       markets: Union[str, List[str], Set[str], None] = None,
                       stream_label: str = None,
                       stream_buffer_name: Union[Literal[False], str] = False,
                       api_key: str = None,
                       api_secret: str = None,
-                      symbols: Union[str, List[str], Set[str], None] = None,
-                      output: Optional[Literal['dict', 'raw_data', 'UnicornFy']] = None,
+                      output: Optional[Literal['dict', 'raw_data']] = None,
                       ping_interval: int = None,
                       ping_timeout: int = None,
                       close_timeout: int = None,
-                      listen_key: str = None,
-                      keep_listen_key_alive: bool = True,
                       stream_buffer_maxlen: int = None,
-                      api: bool = False,
                       process_stream_data: Optional[Callable] = None,
                       process_stream_data_async: Optional[Callable] = None,
                       process_asyncio_queue: Optional[Callable] = None):
@@ -1581,42 +1449,15 @@ class BybitWebSocketApiManager(threading.Thread):
 
                 markets = ['bnbbtc', 'ethbtc']
 
-                Finally:  bnbbtc@trade, ethbtc@trade, bnbbtc@kline_1, ethbtc@kline_1
+                Finally:  bnbbtc@trade, ethbtc@trade, bnbbtc@kline.1, ethbtc@kline.1
 
         `There is a subscriptions limit per stream!
-        <https://github.com/LUCIT-Systems-and-Development/unicorn-bybit-websocket-api/wiki/Binance-websocket-endpoint-configuration-overview>`__
-
-        Create `!userData` streams as single streams, because it's using a different endpoint and can not get combined
-        with other streams in a multiplexed stream!
-
-            Example CEX:
-
-                ``binance_websocket_api_manager.create_stream(["arr"], ["!userData"], api_key="aaa", api_secret="bbb")``
-
-                Isolated Margin:
-
-                ``binance_websocket_api_manager.create_stream(["arr"], ["!userData"], api_key="aaa", api_secret="bbb", symbols="ankrbtc")``
-
-            Example DEX:
-
-                ``binance_websocket_api_manager.create_stream(['orders', 'transfers', 'accounts'], binance_dex_user_address)``
-
-        To create a multiplexed stream which includes also `!miniTicker@arr`, `!ticker@arr`, `!forceOrder@arr` or
-        `!bookTicker@arr` you just need to add `!bookTicker` to the channels list - don't add `arr` (cex) or `$all`
-        (dex) to the markets list.
-
-            Example:
-
-                ``binance_websocket_api_manager.create_stream(['kline_5m', 'marketDepth', '!miniTicker'], ['bnbbtc'])``
-
-        But you have to add `arr` or `$all` if you want to start it as a single stream!
-
-            Example:
-
-                ``binance_websocket_api_manager.create_stream(["arr"], ["!miniTicker"])``
+        <https://github.com/LUCIT-Systems-and-Development/unicorn-bybit-websocket-api/wiki/Bybit-websocket-endpoint-configuration-overview>`__
 
         :param channels: provide the channels you wish to stream
         :type channels: str, list, set
+        :param endpoint: provide the endpoint
+        :type endpoint: str
         :param markets: provide the markets you wish to stream
         :type markets: str, list, set
         :param stream_label: provide a stream_label to identify the stream
@@ -1630,8 +1471,6 @@ class BybitWebSocketApiManager(threading.Thread):
         :type api_key: str
         :param api_secret: provide a valid Binance API secret
         :type api_secret: str
-        :param symbols: provide the symbols for isolated_margin user_data streams
-        :type symbols: str, list, set
         :param output: the default setting `raw_data` can be globally overwritten with the parameter
                        `output_default <https://unicorn-bybit-websocket-api.docs.lucit.tech/unicorn_bybit_websocket_api.html?highlight=output_default#module-unicorn_bybit_websocket_api.unicorn_bybit_websocket_api_manager>`__
                        of BybitWebSocketApiManager`. To overrule the `output_default` value for this specific stream,
@@ -1660,18 +1499,10 @@ class BybitWebSocketApiManager(threading.Thread):
                               This parameter is passed through to the `websockets.client.connect()
                               <https://websockets.readthedocs.io/en/stable/topics/design.html?highlight=close_timeout#closing-handshake>`__
         :type close_timeout: int or None
-        :param keep_listen_key_alive: `True` (default) or `False`.
-        :type keep_listen_key_alive: str
-        :param listen_key: Provide the Binance listenKey for the userData stream.
-        :type listen_key: str
         :param stream_buffer_maxlen: Set a max len for the `stream_buffer`. Only used in combination with a non-generic
                                      `stream_buffer`. The generic `stream_buffer` uses always the value of
                                      `BybitWebSocketApiManager()`.
         :type stream_buffer_maxlen: int or None
-        :param api: Setting this to `True` activates the creation of a Websocket API stream to send API requests via Websocket.
-                    Needs `api_key` and `api_secret` in combination. This type of stream can not be combined with a UserData
-                    stream or another public endpoint. (Default is `False`)
-        :type api: bool
         :param process_stream_data: Provide a function/method to process the received webstream data (callback). The
                             function will be called instead of
                             `add_to_stream_buffer() <unicorn_bybit_websocket_api.html#unicorn_bybit_websocket_api.manager.BybitWebSocketApiManager.add_to_stream_buffer>`__
@@ -1698,14 +1529,8 @@ class BybitWebSocketApiManager(threading.Thread):
 
         :return: stream_id or 'None'
         """
-        # handle Websocket API streams: https://developers.binance.com/docs/binance-trading-api/websocket_api
-        if api is True:
-            if api_key is None or api_secret is None:
-                logger.error(f"BybitWebSocketApiManager.create_stream(api={api}) - `api_key` and `api_secret` are "
-                             f"mandatory if `api=True`")
-                return None
-
-        # create an ordinary stream
+        if endpoint is None:
+            raise ValueError("Parameter 'endpoint' must not be `None`!")
         if channels is None:
             channels = []
         if markets is None:
@@ -1718,45 +1543,24 @@ class BybitWebSocketApiManager(threading.Thread):
         close_timeout = close_timeout or self.close_timeout_default
         ping_interval = ping_interval or self.ping_interval_default
         ping_timeout = ping_timeout or self.ping_timeout_default
-        provided_listen_key = listen_key
         stream_id = self.get_new_uuid_id()
-        markets_new = []
-        if stream_buffer_name is True:
-            stream_buffer_name = stream_id
-        for market in markets:
-            if "!" in market \
-                    or market == "allMiniTickers" \
-                    or market == "allTickers" \
-                    or market == "blockheight" \
-                    or market == "$all":
-                markets_new.append(market)
-            else:
-                if self.is_exchange_type('cex'):
-                    markets_new.append(str(market).lower())
-                elif self.is_exchange_type('dex'):
-                    if re.match(r'[a-zA-Z0-9]{41,43}', market) is None:
-                        markets_new.append(str(market).upper())
-                    else:
-                        markets_new.append(str(market))
-        logger.info(f"BybitWebSocketApiManager.create_stream({str(channels)}, {str(markets_new)}, {str(stream_label)}"
-                    f", {str(stream_buffer_name)}, {str(symbols)}, {str(api)}) with stream_id"
-                    f"={stream_id}")
+
+        logger.info(f"BybitWebSocketApiManager.create_stream({str(channels)}, {str(endpoint)}, {str(markets)}, "
+                    f"{str(stream_label)}, {str(stream_buffer_name)}) with stream_id={stream_id}")
+
         self._add_stream_to_stream_list(stream_id=stream_id,
                                         channels=channels,
-                                        markets=markets_new,
+                                        endpoint=endpoint,
+                                        markets=markets,
                                         stream_label=stream_label,
                                         stream_buffer_name=stream_buffer_name,
-                                        symbols=symbols,
                                         api_key=api_key,
                                         api_secret=api_secret,
                                         output=output,
                                         ping_interval=ping_interval,
                                         ping_timeout=ping_timeout,
                                         close_timeout=close_timeout,
-                                        provided_listen_key=provided_listen_key,
-                                        keep_listen_key_alive=keep_listen_key_alive,
                                         stream_buffer_maxlen=stream_buffer_maxlen,
-                                        api=api,
                                         process_stream_data=process_stream_data,
                                         process_stream_data_async=process_stream_data_async,
                                         process_asyncio_queue=process_asyncio_queue)
@@ -1765,7 +1569,8 @@ class BybitWebSocketApiManager(threading.Thread):
         thread = threading.Thread(target=self._create_stream_thread,
                                   args=(stream_id,
                                         channels,
-                                        markets_new,
+                                        endpoint,
+                                        markets,
                                         stream_buffer_name,
                                         stream_buffer_maxlen),
                                   name=f"_create_stream_thread:  stream_id={stream_id}, time={time.time()}")
@@ -1805,240 +1610,26 @@ class BybitWebSocketApiManager(threading.Thread):
                     logger.error(f"BybitWebSocketApiManager.create_stream({stream_id} - No valid asyncio loop!")
         return stream_id
 
-    def create_websocket_uri(self, channels, markets, stream_id=None, symbols=None, api=False):
+    def create_websocket_uri(self, channels=None, endpoint=None, markets=None, stream_id=None) -> str:
         """
         Create a websocket URI
 
         :param channels: provide the channels to create the URI
         :type channels: str, list, set
+        :param endpoint: provide the endpoint to create the URI
+        :type endpoint: str
         :param markets: provide the markets to create the URI
         :type markets: str, list, set
         :param stream_id: provide a stream_id - only needed for userData Streams (acquiring a listenKey)
         :type stream_id: str
-        :param symbols: provide the symbols for isolated_margin user_data streams
-        :type symbols: str
-        :param api: Setting this to `True` activates the creation of a Websocket API stream to send API requests via
-                    Websocket. Needs `api_key` and `api_secret` in combination. This type of stream can not be combined
-                    with a UserData stream or another public endpoint. (Default is `False`)
-        :type api: bool
-        :return: str or False
+        :return: str or None
         """
-        if api is not False:
-            logger.info("BybitWebSocketApiManager.create_websocket_uri(" + str(channels) + ", " +
-                        str(markets) + ", " + ", " + str(symbols) + ", " + str(api) + ") - Created websocket URI for "
-                        "stream_id=" + str(stream_id) + " is " + self.websocket_api_base_uri)
-            return self.websocket_api_base_uri
-        if isinstance(channels, bool):
-            logger.error(f"BybitWebSocketApiManager.create_websocket_uri({str(channels)}, {str(markets)}"
-                         f", {str(symbols)}) - error_msg: Parameter `channels` must be str, tuple, list "
-                         f"or a set!")
-            return None
-        elif isinstance(markets, bool):
-            logger.error(f"BybitWebSocketApiManager.create_websocket_uri({str(channels)}, {str(markets)}"
-                         f", {str(symbols)}) - error_msg: Parameter `markets` must be str, tuple, list "
-                         f"or a set!")
-            return None
-        payload = []
-        if type(channels) is str:
-            channels = [channels]
-        if type(markets) is str:
-            markets = [markets]
-        if len(channels) == 1 and len(markets) == 1:
-            if "!userData" in channels or "!userData" in markets:
-                if stream_id is not None:
-                    if self.stream_list[stream_id]['provided_listen_key'] is not None:
-                        response = {'listenKey': self.stream_list[stream_id]['provided_listen_key']}
-                        self.stream_list[stream_id]['listen_key'] = str(response['listenKey'])
-
-                    else:
-                        response = self.get_listen_key_from_restclient(stream_id)
-                    try:
-                        if response['code'] == -1102 or \
-                                response['code'] == -2008 or \
-                                response['code'] == -2014 or \
-                                response['code'] == -2015 or \
-                                response['code'] == -11001:
-                            # -1102 = Mandatory parameter 'symbol' was not sent, was empty/null, or malformed.
-                            # -2008 = Invalid Api-Key ID
-                            # -2014 = API-key format invalid
-                            # -2015 = Invalid API-key, IP, or permissions for action
-                            # -11001 = Isolated margin account does not exist.
-                            logger.critical("BybitWebSocketApiManager.create_websocket_uri(" + str(channels) +
-                                            ", " + str(markets) + ", " + ", " + str(symbols) + ") - Received known "
-                                            "error code from rest client: " + str(response))
-                            return response
-                        else:
-                            logger.critical("BybitWebSocketApiManager.create_websocket_uri(" + str(channels) +
-                                            ", " + str(markets) + ", " + ", " + str(symbols) + ") - Received unknown "
-                                            "error code from rest client: " + str(response))
-                            return response
-                    except KeyError:
-                        pass
-                    except TypeError:
-                        pass
-                    if response:
-                        try:
-                            uri = self.websocket_base_uri + "ws/" + str(response['listenKey'])
-                            uri_hidden = self.websocket_base_uri + "ws/" + self.replacement_text
-                            if self.show_secrets_in_logs is True:
-                                logger.info("BybitWebSocketApiManager.create_websocket_uri(" + str(channels) +
-                                            ", " + str(markets) + ", " + str(symbols) + ") - result: " + uri)
-                            else:
-                                logger.info("BybitWebSocketApiManager.create_websocket_uri(" + str(channels) +
-                                            ", " + str(markets) + ", " + str(symbols) + ") - result: " +
-                                            uri_hidden)
-                            subscriptions = self.get_number_of_subscriptions(stream_id)
-                            with self.stream_list_lock:
-                                logger.debug(f"BybitWebSocketApiManager.create_websocket_uri() response - "
-                                             f"`stream_list_lock` was entered!")
-                                self.stream_list[stream_id]['subscriptions'] = subscriptions
-                                logger.debug(f"BybitWebSocketApiManager.create_websocket_uri() - Leaving "
-                                             f"`stream_list_lock`")
-                            return uri
-                        except KeyError:
-                            logger.critical("BybitWebSocketApiManager.create_websocket_uri(" + str(channels) + ", "
-                                            + str(markets) + ", " + ", " + str(symbols) + ") - error_msg: can not "
-                                            "create URI!!")
-                            return None
-                        except TypeError:
-                            logger.critical("BybitWebSocketApiManager.create_websocket_uri(" + str(channels) + ", "
-                                            + str(markets) + ", " + ", " + str(symbols) + ") - error_msg: can not "
-                                            "create URI!!")
-                            return None
-                    else:
-                        logger.critical("BybitWebSocketApiManager.create_websocket_uri(" + str(channels) + ", " +
-                                        str(markets) + ", " + ", " + str(symbols) + ") - error_msg: can not create "
-                                        "URI!!")
-                        return None
-                else:
-                    logger.critical("BybitWebSocketApiManager.create_websocket_uri(" + str(channels) + ", " +
-                                    str(markets) + ", " + ", " + str(symbols) + ") - error_msg: can not create URI!!")
-                    return None
-            elif "!bookTicker" in channels or "!bookTicker" in markets:
-                if stream_id:
-                    subscriptions = self.get_number_of_subscriptions(stream_id)
-                    with self.stream_list_lock:
-                        logger.debug(f"BybitWebSocketApiManager.create_websocket_uri() response - `stream_list_lock` "
-                                     f"was entered!")
-                        self.stream_list[stream_id]['subscriptions'] = subscriptions
-                        logger.debug(f"BybitWebSocketApiManager.create_websocket_uri() - Leaving "
-                                     f"`stream_list_lock`")
-                return self.websocket_base_uri + "ws/!bookTicker"
-            elif "arr" in channels or "$all" in markets:
-                if stream_id:
-                    subscriptions = self.get_number_of_subscriptions(stream_id)
-                    with self.stream_list_lock:
-                        logger.debug(f"BybitWebSocketApiManager.create_websocket_uri() response - `stream_list_lock` "
-                                     f"was entered!")
-                        self.stream_list[stream_id]['subscriptions'] = subscriptions
-                        logger.debug(f"BybitWebSocketApiManager.create_websocket_uri() - Leaving "
-                                     f"`stream_list_lock`")
-                return self.websocket_base_uri + "ws/" + markets[0] + "@" + channels[0]
-            elif "arr" in markets or "$all" in channels:
-                if stream_id:
-                    subscriptions = self.get_number_of_subscriptions(stream_id)
-                    with self.stream_list_lock:
-                        logger.debug(f"BybitWebSocketApiManager.create_websocket_uri() response - `stream_list_lock` "
-                                     f"was entered!")
-                        self.stream_list[stream_id]['subscriptions'] = subscriptions
-                        logger.debug(f"BybitWebSocketApiManager.create_websocket_uri() - Leaving "
-                                     f"`stream_list_lock`")
-                return self.websocket_base_uri + "ws/" + channels[0] + "@" + markets[0]
-            elif self.is_exchange_type("dex"):
-                if re.match(r'[a-zA-Z0-9]{41,43}', markets[0]) is not None:
-                    try:
-                        if self.stream_list[stream_id]['dex_user_address'] is None:
-                            self.stream_list[stream_id]['dex_user_address'] = markets[0]
-                        if self.stream_list[stream_id]['dex_user_address'] != markets[0]:
-                            logger.error("BybitWebSocketApiManager.create_websocket_uri(" + str(channels) + ", " +
-                                         str(markets) + ", " + ", " + str(symbols) + ") - Error: once set, the "
-                                         "dex_user_address is not allowed to get changed anymore!")
-                            return None
-                    except KeyError:
-                        pass
-                    add_payload = {"method": "subscribe",
-                                   "topic": channels[0],
-                                   "address": markets[0]}
-                    payload.append(add_payload)
-                    if stream_id:
-                        with self.stream_list_lock:
-                            self.stream_list[stream_id]['payload'] = payload
-                        subscriptions = self.get_number_of_subscriptions(stream_id)
-                        with self.stream_list_lock:
-                            logger.debug(
-                                f"BybitWebSocketApiManager.create_websocket_uri() response - `stream_list_lock` "
-                                f"was entered!")
-                            self.stream_list[stream_id]['subscriptions'] = subscriptions
-                            logger.debug(f"BybitWebSocketApiManager.create_websocket_uri() - Leaving "
-                                         f"`stream_list_lock`")
-                    return self.websocket_base_uri + "ws/" + markets[0]
-                elif markets[0] != "" and channels[0] != "":
-                    return self.websocket_base_uri + "ws/" + markets[0] + "@" + channels[0]
-                else:
-                    logger.error("BybitWebSocketApiManager.create_websocket_uri(" + str(channels) + ", " +
-                                 str(markets) + ", " + ", " + str(symbols) + ") - Error: not able to create websocket "
-                                 "URI for DEX")
-                    return None
-        if self.is_exchange_type("dex"):
-            query = "ws"
-            if stream_id:
-                payload = self.create_payload(stream_id, "subscribe", channels=channels, markets=markets)
-                with self.stream_list_lock:
-                    self.stream_list[stream_id]['payload'] = payload
-                subscriptions = self.get_number_of_subscriptions(stream_id)
-                with self.stream_list_lock:
-                    logger.debug(
-                        f"BybitWebSocketApiManager.create_websocket_uri() response - `stream_list_lock` "
-                        f"was entered!")
-                    self.stream_list[stream_id]['subscriptions'] = subscriptions
-                    logger.debug(f"BybitWebSocketApiManager.create_websocket_uri() - Leaving "
-                                 f"`stream_list_lock`")
-            return self.websocket_base_uri + str(query)
-        else:
-            query = "stream?streams="
-            final_market = "@arr"
-            market = ""
-            channel = ""
-            for market in markets:
-                if "arr@" in market:
-                    final_market = "@" + market
-            final_channel = "@arr"
-            for channel in channels:
-                if "arr@" in channel:
-                    final_channel = "@" + channel
-            for channel in channels:
-                if channel == "!userData":
-                    logger.error("BybitWebSocketApiManager.create_websocket_uri(" + str(channels) + ", " +
-                                 str(markets) + ", " + ", " + str(symbols) + ") - Can not create "
-                                 "'outboundAccountInfo' in a multi channel socket! "
-                                 "Unfortunately Binance only stream it in a single stream socket! ./"
-                                 "Use create_stream([\"arr\"], [\"!userData\"]) to "
-                                 "initiate an extra connection.")
-                    return None
-            for market in markets:
-                if market == "!userData":
-                    logger.error("BybitWebSocketApiManager.create_websocket_uri(" + str(channels) + ", " +
-                                 str(markets) + ", " + ", " + str(symbols) + ") - Can not create "
-                                 "'outboundAccountInfo' in a multi channel socket! "
-                                 "Unfortunately Binance only stream it in a single stream socket! ./"
-                                 "Use create_stream([\"arr\"], [\"!userData\"]) to "
-                                 "initiate an extra connection.")
-                    return None
-            if "!" in channel:
-                query += channel + final_market
-            elif "!" in market:
-                query += market + final_channel
-            else:
-                query += market.lower() + "@" + channel
-            try:
-                if self.subscribe_to_stream(stream_id=stream_id, markets=markets, channels=channels) is False:
-                    return None
-            except KeyError:
-                pass
-            logger.info("BybitWebSocketApiManager.create_websocket_uri(" + str(channels) + ", " +
-                        str(markets) + ", " + ", " + str(symbols) + ") - Created websocket URI for stream_id=" +
-                        str(stream_id) + " is " + self.websocket_base_uri + str(query))
-            return self.websocket_base_uri + str(query)
+        if endpoint is None:
+            raise ValueError(f"Parameter 'endpoint' must not be `None`!")
+        uri = f"{self.websocket_base_uri}/{self.api_version}/{endpoint}"
+        logger.info(f"BybitWebSocketApiManager.create_websocket_uri() - Created websocket URI for stream_id={stream_id}"
+                    f" is '{uri}'")
+        return uri
 
     def delete_listen_key_by_stream_id(self, stream_id) -> bool:
         """
@@ -3810,7 +3401,7 @@ class BybitWebSocketApiManager(threading.Thread):
                        new_api_key=None,
                        new_api_secret=None,
                        new_symbols=None,
-                       new_output: Optional[Literal['dict', 'raw_data', 'UnicornFy']] = None,
+                       new_output: Optional[Literal['dict', 'raw_data']] = None,
                        new_ping_interval=20,
                        new_ping_timeout=20,
                        new_close_timeout=10,
@@ -4367,17 +3958,7 @@ class BybitWebSocketApiManager(threading.Thread):
             logger.debug(f"BybitWebSocketApiManager.subscribe_to_stream() - Leaving `stream_list_lock`!")
         markets_new = []
         for market in markets:
-            if "!" in market \
-                    or market == "allMiniTickers" \
-                    or market == "allTickers" \
-                    or market == "blockheight" \
-                    or market == "$all":
-                markets_new.append(market)
-            else:
-                if self.is_exchange_type('dex'):
-                    markets_new.append(str(market).upper())
-                elif self.is_exchange_type('cex'):
-                    markets_new.append(str(market).lower())
+            markets_new.append(str(market).upper())
         with self.stream_list_lock:
             logger.debug(f"BybitWebSocketApiManager.subscribe_to_stream() - `stream_list_lock` was entered!")
             self.stream_list[stream_id]['markets'] = list(set(self.stream_list[stream_id]['markets'] + markets_new))
@@ -4390,15 +3971,7 @@ class BybitWebSocketApiManager(threading.Thread):
             logger.debug(f"BybitWebSocketApiManager.subscribe_to_stream() - `stream_list_lock` was entered!")
             self.stream_list[stream_id]['subscriptions'] = subscriptions
             logger.debug(f"BybitWebSocketApiManager.subscribe_to_stream() - Leaving `stream_list_lock`!")
-        # control subscription limit:
-        # https://github.com/LUCIT-Systems-and-Development/unicorn-bybit-websocket-api/wiki/Binance-websocket-endpoint-configuration-overview
-        if self.stream_list[stream_id]['subscriptions'] > self.max_subscriptions_per_stream:
-            error_msg = (f"The limit of {str(self.max_subscriptions_per_stream)} subscriptions per stream has been "
-                         f"exceeded!")
-            logger.error(f"BybitWebSocketApiManager.subscribe_to_stream({str(stream_id)}) - error_msg: "
-                         f"{str(error_msg)}")
-            raise MaximumSubscriptionsExceeded(exchange=self.get_exchange(),
-                                               max_subscriptions_per_stream=self.max_subscriptions_per_stream)
+        # Todo: control subscription limit!
         if payload is None:
             logger.error(f"BybitWebSocketApiManager.subscribe_to_stream({str(stream_id)}) - error_msg: Payload is "
                          f"None!")

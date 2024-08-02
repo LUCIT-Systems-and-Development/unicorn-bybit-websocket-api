@@ -1,0 +1,3 @@
+Todo:
+
+- Support alternate domain: wss://stream.bytick.com

@@ -24,12 +24,16 @@ import sys
 if sys.version_info >= (3, 9):
     from typing import Type
     WEBSOCKET_BASE_URI: Type[str] = str
+    VERSION: Type[str] = str
+    ARGS_LIMIT: Type[int] = int
     MAX_SUBSCRIPTIONS_PER_STREAM_SPOT: Type[int] = int
     MAX_SUBSCRIPTIONS_PER_STREAM_LINEAR: Type[int] = int
     MAX_SUBSCRIPTIONS_PER_STREAM_INVERSE: Type[int] = int
     MAX_SUBSCRIPTIONS_PER_STREAM_OPTION: Type[int] = int
 else:
     WEBSOCKET_BASE_URI = str
+    VERSION = str
+    ARGS_LIMIT = int
     MAX_SUBSCRIPTIONS_PER_STREAM_SPOT = int
     MAX_SUBSCRIPTIONS_PER_STREAM_LINEAR = int
     MAX_SUBSCRIPTIONS_PER_STREAM_INVERSE = int
@@ -47,11 +51,11 @@ CEX_EXCHANGES = [
 ]
 
 # only python 3.9+
-# CONNECTION_SETTINGS: dict[str, Tuple[WEBSOCKET_BASE_URI, MAX_SUBSCRIPTIONS_PER_STREAM_SPOT,
-#   MAX_SUBSCRIPTIONS_PER_STREAM_LINEAR, MAX_SUBSCRIPTIONS_PER_STREAM_INVERSE, MAX_SUBSCRIPTIONS_PER_STREAM_OPTION]] = {
+# CONNECTION_SETTINGS: dict[str, Tuple[WEBSOCKET_BASE_URI, VERSION, ARGS_LIMIT, MAX_SUBSCRIPTIONS_PER_STREAM_SPOT,
+#   MAX_SUBSCRIPTIONS_PER_STREAM_LINEAR, MAX_SUBSCRIPTIONS_PER_STREAM_INVERSE, MAX_SUBSCRIPTIONS_PER_STREAM_OPTION]]
 # ARGS Limits: https://bybit-exchange.github.io/docs/v5/ws/connect#public-channel---args-limits
 
 CONNECTION_SETTINGS = {
-    Exchanges.BYBIT: ("wss://stream.bybit.com/v5/", 10, 2000, 0, 0),
-    Exchanges.BYBIT_TESTNET: ("wss://stream-testnet.bybit.com/v5/", 10, 2000, 0, 0),
+    Exchanges.BYBIT: ("wss://stream.bybit.com", "v5", 21000, 10, 2000, 0, 0),
+    Exchanges.BYBIT_TESTNET: ("wss://stream-testnet.bybit.com", "v5", 21000, 10, 2000, 0, 0),
 }

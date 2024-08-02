@@ -50,15 +50,15 @@ To run modules of the *UNICORN Trading Suite* you need a [valid license](https:/
 ```
 from unicorn_bybit_websocket_api import BybitWebSocketApiManager
 
-ubwa = BybitWebSocketApiManager(exchange="bybit.com")
-ubwa.create_stream(channels=['trade', 'kline_1m'], markets=['btcusdt', 'bnbbtc', 'ethbtc'])
+bybit_wsm = BybitWebSocketApiManager(exchange="bybit.com")
+bybit_wsm.create_stream(endpoint="public/linear", channels=['kline.1'], markets=['btcusdt', 'bnbbtc', 'ethbtc'])
 ```
 
 #### And 4 more lines to print out the data
 
 ```
 while True:
-    oldest_data_from_stream_buffer = ubwa.pop_stream_data_from_stream_buffer()
+    oldest_data_from_stream_buffer = bybit_wsm.pop_stream_data_from_stream_buffer()
     if oldest_data_from_stream_buffer:
         print(oldest_data_from_stream_buffer)
 ```
@@ -71,10 +71,10 @@ from unicorn_bybit_websocket_api import BybitWebSocketApiManager
 def process_new_receives(stream_data):
     print(str(stream_data))
 
-ubwa = BybitWebSocketApiManager(exchange="bybit.com")
-ubwa.create_stream(channels=['trade', 'kline_1m'], 
-                   markets=['btcusdt', 'bnbbtc', 'ethbtc'], 
-                   process_stream_data=process_new_receives)
+bybit_wsm = BybitWebSocketApiManager(exchange="bybit.com")
+bybit_wsm.create_stream(endpoint="public/linear", channels=['kline.1m'], 
+                        markets=['btcusdt', 'bnbbtc', 'ethbtc'], 
+                        process_stream_data=process_new_receives)
 ```
 
 ### Or with an [async callback function](https://unicorn-bybit-websocket-api.docs.lucit.tech/unicorn_bybit_websocket_api.html?highlight=process_stream_data#unicorn_bybit_websocket_api.manager.BybitWebSocketApiManager.create_stream) just do
@@ -87,10 +87,10 @@ async def process_new_receives(stream_data):
     print(stream_data)
     await asyncio.sleep(1)
 
-ubwa = BybitWebSocketApiManager()
-ubwa.create_stream(channels=['trade', 'kline_1m'],
-                   markets=['btcusdt', 'bnbbtc', 'ethbtc'],
-                   process_stream_data_async=process_new_receives)
+bybit_wsm = BybitWebSocketApiManager()
+bybit_wsm.create_stream(endpoint="public/linear", channels=['kline_1m'],
+                        markets=['btcusdt', 'bnbbtc', 'ethbtc'],
+                        process_stream_data_async=process_new_receives)
 ```
 
 ### Or await the stream data in an asyncio coroutine
@@ -104,19 +104,20 @@ import asyncio
 
 async def main():
     async def process_asyncio_queue(stream_id=None):
-        print(f"Start processing the data from stream '{ubwa.get_stream_label(stream_id)}':")
-        while ubwa.is_stop_request(stream_id) is False:
-            data = await ubwa.get_stream_data_from_asyncio_queue(stream_id)
+        print(f"Start processing the data from stream '{bybit_wsm.get_stream_label(stream_id)}':")
+        while bybit_wsm.is_stop_request(stream_id) is False:
+            data = await bybit_wsm.get_stream_data_from_asyncio_queue(stream_id)
             print(data)
-            ubwa.asyncio_queue_task_done(stream_id)
-    ubwa.create_stream(channels=['trade'],
-                       markets=['ethbtc', 'btcusdt'],
-                       stream_label="TRADES",
-                       process_asyncio_queue=process_asyncio_queue)
-    while not ubwa.is_manager_stopping():
+            bybit_wsm.asyncio_queue_task_done(stream_id)
+    bybit_wsm.create_stream(endpoint="public/linear",
+                            channels=['trade'],
+                            markets=['ethbtc', 'btcusdt'],
+                            stream_label="TRADES",
+                            process_asyncio_queue=process_asyncio_queue)
+    while not bybit_wsm.is_manager_stopping():
             await asyncio.sleep(1)
 
-with BybitWebSocketApiManager(exchange='bybit.com') as ubwa:
+with BybitWebSocketApiManager(exchange='bybit.com') as bybit_wsm:
     try:
         asyncio.run(main())
     except KeyboardInterrupt:
@@ -133,26 +134,26 @@ Basically that's it, but there are more options.
 markets = ['engbtc', 'zileth']
 channels = ['kline_5m', 'kline_15m', 'kline_30m', 'kline_1h', 'kline_12h', 'depth5']
 
-ubwa.subscribe_to_stream(stream_id=stream_id, channels=channels, markets=markets)
+bybit_wsm.subscribe_to_stream(stream_id=stream_id, channels=channels, markets=markets)
 
-ubwa.unsubscribe_from_stream(stream_id=stream_id, markets=markets)
+bybit_wsm.unsubscribe_from_stream(stream_id=stream_id, markets=markets)
 
-ubwa.unsubscribe_from_stream(stream_id=stream_id, channels=channels)
+bybit_wsm.unsubscribe_from_stream(stream_id=stream_id, channels=channels)
 ```
 
-## Stop `ubwa` after usage to avoid memory leaks
+## Stop `bybit_wsm` after usage to avoid memory leaks
 
-When you instantiate UBWA with `with`, `ubwa.stop_manager()` is automatically executed upon exiting the `with`-block.
-
-```
-with BybitWebSocketApiManager() as ubwa:
-    ubwa.create_stream(channels="trade", markets="btcusdt", stream_label="TRADES")
-```
-
-Without `with`, you must explicitly execute `ubwa.stop_manager()` yourself.
+When you instantiate UNICORN Bybit Websocket API with `with`, `bybit_wsm.stop_manager()` is automatically executed upon exiting the `with`-block.
 
 ```
-ubwa.stop_manager()
+with BybitWebSocketApiManager() as bybit_wsm:
+    bybit_wsm.create_stream(channels="trade", markets="btcusdt", stream_label="TRADES")
+```
+
+Without `with`, you must explicitly execute `bybit_wsm.stop_manager()` yourself.
+
+```
+bybit_wsm.stop_manager()
 ```
 
 ## `stream_signals` - know the state of your streams
@@ -170,11 +171,11 @@ from unicorn_bybit_websocket_api import BybitWebSocketApiManager
 import time
 
 def process_stream_signals(signal_type=None, stream_id=None, data_record=None, error_msg=None):
-    print(f"Received stream_signal for stream '{ubwa.get_stream_label(stream_id=stream_id)}': "
+    print(f"Received stream_signal for stream '{bybit_wsm.get_stream_label(stream_id=stream_id)}': "
           f"{signal_type} - {stream_id} - {data_record} - {error_msg}")
 
-with BybitWebSocketApiManager(process_stream_signals=process_stream_signals) as ubwa:
-    ubwa.create_stream(channels="trade", markets="btcusdt", stream_label="TRADES")
+with BybitWebSocketApiManager(process_stream_signals=process_stream_signals) as bybit_wsm:
+    bybit_wsm.create_stream(channels="trade", markets="btcusdt", stream_label="TRADES")
     time.sleep(2)
     print(f"Waiting 5 seconds and then stop the stream ...")
     time.sleep(5)
@@ -291,7 +292,7 @@ and specific streams with
 - *Socks5 Proxy* support:
 
   ```
-  ubwa = BybitWebSocketApiManager(exchange="bybit.com", socks5_proxy_server="127.0.0.1:9050") 
+  bybit_wsm = BybitWebSocketApiManager(exchange="bybit.com", socks5_proxy_server="127.0.0.1:9050") 
   ```
   
   Read the [docs](https://unicorn-bybit-websocket-api.docs.lucit.tech/unicorn_bybit_websocket_api.html#unicorn_bybit_websocket_api.manager.BybitWebSocketApiManager)
