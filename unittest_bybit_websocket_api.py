@@ -246,6 +246,20 @@ class TestApiLive(unittest.TestCase):
         time.sleep(3)
         self.__class__.ubwa.stop_stream(stream_id=stream_id_1)
 
+    def z_test_live(self):
+        print(f"Live test ...")
+        stream_id = self.__class__.ubwa.create_stream(endpoint="public/linear", channels=['kline.1'],
+                                                      markets=['btcusdt'])
+        self.__class__.ubwa.get_stream_info(stream_id=stream_id)
+        self.__class__.ubwa.get_stream_statistic(stream_id=stream_id)
+        self.__class__.ubwa.get_total_receives()
+        self.__class__.ubwa.get_total_received_bytes()
+        self.__class__.ubwa.increase_reconnect_counter(stream_id=stream_id)
+        self.__class__.ubwa.is_update_available_check_command()
+        self.__class__.ubwa.print_summary()
+        self.__class__.ubwa.print_stream_info(stream_id=stream_id)
+        self.__class__.ubwa.pop_stream_signal_from_stream_signal_buffer()
+
 
 if __name__ == '__main__':
     try:

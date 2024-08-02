@@ -1113,59 +1113,6 @@ class BybitWebSocketApiManager(threading.Thread):
                 pass
         logger.debug(f"BybitWebSocketApiManager._frequent_checks() - Leaving thread ...")
 
-    async def _ping_listen_key(self, stream_id=None):
-        logger.info(f"BybitWebSocketApiManager._ping_listen_key(stream_id={stream_id}) - asyncio task running!")
-        if isinstance(self.stream_list[stream_id]['markets'], str):
-            with self.stream_list_lock:
-                logger.debug(f"BybitWebSocketApiManager._ping_listen_key() - `stream_list_lock` was entered!")
-                self.stream_list[stream_id]['markets'] = [self.stream_list[stream_id]['markets'], ]
-                logger.debug(f"BybitWebSocketApiManager._ping_listen_key() - Leaving `stream_list_lock`!")
-        if isinstance(self.stream_list[stream_id]['channels'], str):
-            with self.stream_list_lock:
-                logger.debug(f"BybitWebSocketApiManager._ping_listen_key() - `stream_list_lock` was entered!")
-                self.stream_list[stream_id]['channels'] = [self.stream_list[stream_id]['channels'], ]
-                logger.debug(f"BybitWebSocketApiManager._ping_listen_key() - Leaving `stream_list_lock`!")
-        while self.stream_list[stream_id]['status'] != "stopped" \
-                and not self.stream_list[stream_id]['status'].startswith("crashed"):
-            await asyncio.sleep(2)
-            if self.stream_list[stream_id]['keep_listen_key_alive'] is True \
-                    and (self.stream_list[stream_id]['start_time'] +
-                         self.stream_list[stream_id]['listen_key_cache_time']) < time.time() \
-                    and (self.stream_list[stream_id]['last_static_ping_listen_key'] +
-                         self.stream_list[stream_id]['listen_key_cache_time']) < time.time():
-                try:
-                    response, bybit_api_status = self.restclient.keepalive_listen_key(stream_id)
-                    if bybit_api_status is not None:
-                        self.bybit_api_status = bybit_api_status
-                    with self.stream_list_lock:
-                        logger.debug(f"BybitWebSocketApiManager._ping_listen_key() - `stream_list_lock` was entered!")
-                        self.stream_list[stream_id]['last_static_ping_listen_key'] = time.time()
-                        logger.debug(f"BybitWebSocketApiManager._ping_listen_key() - Leaving `stream_list_lock`!")
-                    self.set_heartbeat(stream_id)
-                    logger.info(f"BybitWebSocketApiManager._ping_listen_key(stream_id={stream_id}) - pinged "
-                                f"listen_key!")
-                    sleep_till = time.time() + self.listen_key_refresh_interval
-                    while sleep_till > time.time() \
-                            and self.stream_list[stream_id]['status'] != "stopped" \
-                            and not self.stream_list[stream_id]['status'].startswith("crashed"):
-                        await asyncio.sleep(2)
-                except Exception as error_msg:
-                    logger.critical(f"BybitWebSocketApiManager._ping_listen_key(stream_id={stream_id}) - "
-                                    f"BybitAPIException - Not able to ping the listen_key - error: {error_msg}")
-                    if "IP banned" in str(error_msg):
-                        match = re.search(r"until (\d+)", str(error_msg))
-                        if match:
-                            banned_timeframe = (int(match.group(1))/1000) - time.time()
-                            logger.critical(f"BybitWebSocketApiManager._ping_listen_key(stream_id="
-                                            f"{stream_id}) - Wait for {banned_timeframe} seconds until the "
-                                            f"IP ban has expired.")
-                            while banned_timeframe > 0 \
-                                    and self.stream_list[stream_id]['status'] != "stopped" \
-                                    and not self.stream_list[stream_id]['status'].startswith("crashed"):
-                                await asyncio.sleep(2)
-                                banned_timeframe = (int(match.group(1)) / 1000) - time.time()
-        logger.info(f"BybitWebSocketApiManager._ping_listen_key(stream_id={stream_id}) - asyncio task stopped!")
-
     @staticmethod
     def _handle_task_result(task: asyncio.Task) -> None:
         """
@@ -2135,65 +2082,6 @@ class BybitWebSocketApiManager(threading.Thread):
             logger.debug(f"BybitWebSocketApiManager.get_number_of_all_subscriptions() - RuntimeError: {error_msg}")
             return self.all_subscriptions_number
         return subscriptions
-
-    def get_number_of_free_subscription_slots(self, stream_id):
-        """
-        Get the number of free subscription slots (max allowed subscriptions - subscriptions) of a specific stream
-
-        :return: int
-        """
-        try:
-            free_slots = self.max_subscriptions_per_stream - self.stream_list[stream_id]['subscriptions']
-        except KeyError as error_msg:
-            logger.debug(f"BybitWebSocketApiManager.get_number_of_free_subscription_slots() - KeyError: {error_msg}")
-            return None
-        return free_slots
-
-    def get_listen_key_from_restclient(self, stream_id):
-        """
-        Get a new or cached (<30m) listen_key
-
-        :param stream_id: provide a stream_id
-        :type stream_id: str
-        """
-        try:
-            if (self.stream_list[stream_id]['start_time'] + self.stream_list[stream_id]['listen_key_cache_time']) > \
-                    time.time() or (self.stream_list[stream_id]['last_static_ping_listen_key'] +
-                                    self.stream_list[stream_id]['listen_key_cache_time']) > time.time():
-                # listen_key is not older than 30 min
-                if self.stream_list[stream_id]['listen_key'] is not None:
-                    response = {'listenKey': self.stream_list[stream_id]['listen_key']}
-                    return response
-        except KeyError as error_msg:
-            logger.debug(f"BybitWebSocketApiManager.get_listen_key_from_restclient() - KeyError: {error_msg}")
-            return False
-        # no cached listen_key or listen_key is older than 30 min
-        # acquire a new listen_key:
-        try:
-            response, bybit_api_status = self.restclient.get_listen_key(stream_id)
-            if bybit_api_status is not None:
-                self.bybit_api_status = bybit_api_status
-        except ResourceWarning as error_msg:
-            logger.error(f"BybitWebSocketApiManager.get_listen_key_from_restclient() - ResourceWarning: {error_msg}")
-            return False
-        if response:
-            # save and return the valid listen_key
-            try:
-                with self.stream_list_lock:
-                    logger.debug(f"BybitWebSocketApiManager.get_listen_key_from_restclient() - `stream_list_lock` "
-                                 f"was entered!")
-                    self.stream_list[stream_id]['listen_key'] = str(response['listenKey'])
-                    logger.debug(f"BybitWebSocketApiManager.get_listen_key_from_restclient() - Leaving "
-                                 f"`stream_list_lock`!")
-                return response
-            except KeyError:
-                # no valid listen_key, but a response from endpoint
-                return response
-            except TypeError:
-                return response
-        else:
-            # no valid listen_key
-            return False
 
     def get_most_receives_per_second(self):
         """
