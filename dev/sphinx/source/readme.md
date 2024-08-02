@@ -51,7 +51,7 @@ To run modules of the *UNICORN Trading Suite* you need a [valid license](https:/
 from unicorn_bybit_websocket_api import BybitWebSocketApiManager
 
 bybit_wsm = BybitWebSocketApiManager(exchange="bybit.com")
-bybit_wsm.create_stream(endpoint="public/linear", channels=['kline.1'], markets=['btcusdt', 'bnbbtc', 'ethbtc'])
+bybit_wsm.create_stream(endpoint="public/linear", channels=['kline.1'], markets=['btcusdt', 'ethusdt'])
 ```
 
 #### And 4 more lines to print out the data
@@ -73,7 +73,7 @@ def process_new_receives(stream_data):
 
 bybit_wsm = BybitWebSocketApiManager(exchange="bybit.com")
 bybit_wsm.create_stream(endpoint="public/linear", channels=['kline.1m'], 
-                        markets=['btcusdt', 'bnbbtc', 'ethbtc'], 
+                        markets=['btcusdt', 'ethusdt'], 
                         process_stream_data=process_new_receives)
 ```
 
@@ -89,7 +89,7 @@ async def process_new_receives(stream_data):
 
 bybit_wsm = BybitWebSocketApiManager()
 bybit_wsm.create_stream(endpoint="public/linear", channels=['kline_1m'],
-                        markets=['btcusdt', 'bnbbtc', 'ethbtc'],
+                        markets=['btcusdt', 'ethusdt'],
                         process_stream_data_async=process_new_receives)
 ```
 
@@ -110,8 +110,8 @@ async def main():
             print(data)
             bybit_wsm.asyncio_queue_task_done(stream_id)
     bybit_wsm.create_stream(endpoint="public/linear",
-                            channels=['trade'],
-                            markets=['ethbtc', 'btcusdt'],
+                            channels=['kline.1'],
+                            markets=['btcusdt', 'ethusdt'],
                             stream_label="KLINE_1m",
                             process_asyncio_queue=process_asyncio_queue)
     while not bybit_wsm.is_manager_stopping():
