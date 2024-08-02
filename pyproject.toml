@@ -36,6 +36,7 @@ requests = ">=2.31.0"
 ujson = "*"
 websocket-client = "*"
 websockets = "11.0.3"
+typing_extensions = "*"
 
 [tool.poetry.dev-dependencies]
 
