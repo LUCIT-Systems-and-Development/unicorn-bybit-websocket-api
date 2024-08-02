@@ -45,23 +45,23 @@ class BybitWebSocketApiSocket(object):
         self.websocket = None
 
     async def __aenter__(self):
-        logger.debug(f"Entering asynchronous with-context of BinanceWebSocketApiSocket() ...")
+        logger.debug(f"Entering asynchronous with-context of BybitWebSocketApiSocket() ...")
         self.raise_exceptions()
         self.manager.sockets[self.stream_id] = self
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
-        logger.debug(f"Leaving asynchronous with-context of BinanceWebSocketApiSocket() ...")
+        logger.debug(f"Leaving asynchronous with-context of BybitWebSocketApiSocket() ...")
         self.manager.set_socket_is_not_ready(stream_id=self.stream_id)
         if self.websocket is not None:
             try:
                 await self.websocket.close()
             except AttributeError as error_msg:
-                logger.debug(f"BinanceWebSocketApiSocket.__aexit__() - error_msg: {error_msg}")
+                logger.debug(f"BybitWebSocketApiSocket.__aexit__() - error_msg: {error_msg}")
         del self.manager.sockets[self.stream_id]
 
     async def start_socket(self):
-        logger.info(f"BinanceWebSocketApiSocket.start_socket({str(self.stream_id)}, {str(self.channels)}, "
+        logger.info(f"BybitWebSocketApiSocket.start_socket({str(self.stream_id)}, {str(self.channels)}, "
                     f"{str(self.markets)})")
         try:
             async with BybitWebSocketApiConnection(self.manager,
@@ -83,14 +83,14 @@ class BybitWebSocketApiSocket(object):
                     self.manager.set_heartbeat(self.stream_id)
                     try:
                         while self.manager.stream_list[self.stream_id]['payload']:
-                            logger.info(f"BinanceWebSocketApiSocket.start_socket({str(self.stream_id)}, "
+                            logger.info(f"BybitWebSocketApiSocket.start_socket({str(self.stream_id)}, "
                                         f"{str(self.channels)}, {str(self.markets)} - Sending payload started ...")
                             payload = []
                             try:
                                 payload = self.manager.stream_list[self.stream_id]['payload'].pop(0)
                             except IndexError as error_msg:
-                                logger.debug(f"BinanceWebSocketApiSocket.start_socket() IndexError: {error_msg}")
-                            logger.info(f"BinanceWebSocketApiSocket.start_socket({str(self.stream_id)}, "
+                                logger.debug(f"BybitWebSocketApiSocket.start_socket() IndexError: {error_msg}")
+                            logger.info(f"BybitWebSocketApiSocket.start_socket({str(self.stream_id)}, "
                                         f"{str(self.channels)}, {str(self.markets)} - Sending payload: {str(payload)}")
                             try:
                                 await self.websocket.send(json.dumps(payload, ensure_ascii=False))
@@ -98,8 +98,8 @@ class BybitWebSocketApiSocket(object):
                                 logger.debug(f"BybitWebSocketApiManager._create_stream_thread() "
                                              f"stream_id={str(self.stream_id)}  - AttributeError `error: 18` - "
                                              f"error_msg: {str(error_msg)}")
-                            # To avoid a ban we respect the limits of binance:
-                            # https://github.com/binance-exchange/binance-official-api-docs/blob/5fccfd572db2f530e25e302c02be5dec12759cf9/CHANGELOG.md#2020-04-23
+                            # Todo: rewrite for bybit!
+                            # To avoid a ban we respect the limits of Bybit:
                             # Limit: max 5 messages per second inclusive pings/pong
                             # Websocket API does not seem to have this restriction!
                             max_subscriptions_per_second = self.manager.max_send_messages_per_second - \
@@ -109,43 +109,7 @@ class BybitWebSocketApiSocket(object):
 
                         received_stream_data_json = await self.websocket.receive()
                         if received_stream_data_json is not None:
-                            if self.output == "UnicornFy":
-                                if self.manager.stream_list[self.stream_id]['api'] is False:
-                                    if self.exchange == "binance.com":
-                                        received_stream_data = self.unicorn_fy.binance_com_websocket(received_stream_data_json)
-                                    elif self.exchange == "binance.com-testnet":
-                                        received_stream_data = self.unicorn_fy.binance_com_websocket(received_stream_data_json)
-                                    elif self.exchange == "binance.com-margin":
-                                        received_stream_data = self.unicorn_fy.binance_com_margin_websocket(received_stream_data_json)
-                                    elif self.exchange == "binance.com-margin-testnet":
-                                        received_stream_data = self.unicorn_fy.binance_com_margin_websocket(received_stream_data_json)
-                                    elif self.exchange == "binance.com-isolated_margin":
-                                        received_stream_data = self.unicorn_fy.binance_com_isolated_margin_websocket(received_stream_data_json)
-                                    elif self.exchange == "binance.com-isolated_margin-testnet":
-                                        received_stream_data = self.unicorn_fy.binance_com_isolated_margin_websocket(received_stream_data_json)
-                                    elif self.exchange == "binance.com-futures":
-                                        received_stream_data = self.unicorn_fy.binance_com_futures_websocket(received_stream_data_json)
-                                    elif self.exchange == "binance.com-futures-testnet":
-                                        received_stream_data = self.unicorn_fy.binance_com_futures_websocket(received_stream_data_json)
-                                    elif self.exchange == "binance.com-coin-futures" \
-                                            or self.exchange == "binance.com-coin_futures":
-                                        received_stream_data = self.unicorn_fy.binance_com_coin_futures_websocket(received_stream_data_json)
-                                    elif self.exchange == "binance.je":
-                                        received_stream_data = self.unicorn_fy.binance_je_websocket(received_stream_data_json)
-                                    elif self.exchange == "binance.us":
-                                        received_stream_data = self.unicorn_fy.binance_us_websocket(received_stream_data_json)
-                                    elif self.exchange == "trbinance.com":
-                                        received_stream_data = self.unicorn_fy.trbinance_com_websocket(received_stream_data_json)
-                                    elif self.exchange == "binance.org":
-                                        received_stream_data = self.unicorn_fy.binance_org_websocket(received_stream_data_json)
-                                    elif self.exchange == "binance.org-testnet":
-                                        received_stream_data = self.unicorn_fy.binance_org_websocket(received_stream_data_json)
-                                    else:
-                                        received_stream_data = received_stream_data_json
-                                else:
-                                    # WS API does not need to get unicornfied, just turn it into a dict:
-                                    received_stream_data = json.loads(received_stream_data_json)
-                            elif self.output == "dict":
+                            if self.output == "dict":
                                 received_stream_data = json.loads(received_stream_data_json)
                             else:
                                 received_stream_data = received_stream_data_json
@@ -159,50 +123,50 @@ class BybitWebSocketApiSocket(object):
                                                                   stream_buffer_name=stream_buffer_name)
                             elif self.manager.specific_process_asyncio_queue[self.stream_id] is not None:
                                 # if create_stream() got a asyncio consumer task for the asyncio queue -> use it
-                                logger.debug(f"BinanceWebSocketApiSocket.start_socket() - Received data set from "
+                                logger.debug(f"BybitWebSocketApiSocket.start_socket() - Received data set from "
                                              f"stream_id={self.stream_id} transferred to `asyncio_queue`!")
                                 await self.manager.asyncio_queue[self.stream_id].put(received_stream_data)
                             elif self.manager.specific_process_stream_data[self.stream_id] is not None:
                                 # if create_stream() got a callback function -> use it
-                                logger.debug(f"BinanceWebSocketApiSocket.start_socket() - Received data set from "
+                                logger.debug(f"BybitWebSocketApiSocket.start_socket() - Received data set from "
                                              f"stream_id={self.stream_id} transferred to `process_stream_data`!")
                                 self.manager.specific_process_stream_data[self.stream_id](received_stream_data)
                             elif self.manager.specific_process_stream_data_async[self.stream_id] is not None:
                                 # if create_stream() got an asynchronous callback function -> use it
-                                logger.debug(f"BinanceWebSocketApiSocket.start_socket() - Received data set from "
+                                logger.debug(f"BybitWebSocketApiSocket.start_socket() - Received data set from "
                                              f"stream_id={self.stream_id} transferred to "
                                              f"`process_stream_data_async`!")
                                 await self.manager.specific_process_stream_data_async[self.stream_id](received_stream_data)
                             else:
                                 if self.manager.process_asyncio_queue is not None:
                                     # if global asyncio consumer task for the asyncio queue -> use it
-                                    logger.debug(f"BinanceWebSocketApiSocket.start_socket() - Received data set from "
+                                    logger.debug(f"BybitWebSocketApiSocket.start_socket() - Received data set from "
                                                  f"stream_id={self.stream_id} transferred to `asyncio_queue`!")
                                     await self.manager.asyncio_queue[self.stream_id].put(received_stream_data)
                                 elif self.manager.process_stream_data is not None:
                                     # if global callback function -> use it
-                                    logger.debug(f"BinanceWebSocketApiSocket.start_socket() - Received data set from "
+                                    logger.debug(f"BybitWebSocketApiSocket.start_socket() - Received data set from "
                                                  f"stream_id={self.stream_id} transferred to `process_stream_data`!")
                                     self.manager.process_stream_data(received_stream_data)
                                 elif self.manager.process_stream_data_async is not None:
                                     # if global async callback function -> use it
-                                    logger.debug(f"BinanceWebSocketApiSocket.start_socket() - Received data set from "
+                                    logger.debug(f"BybitWebSocketApiSocket.start_socket() - Received data set from "
                                                  f"stream_id={self.stream_id} transferred to "
                                                  f"`process_stream_data_async`!")
                                     await self.manager.process_stream_data_async(received_stream_data)
                                 else:
                                     # If nothing else is used, write to global stream_buffer
-                                    logger.debug(f"BinanceWebSocketApiSocket.start_socket() - Received data set from "
+                                    logger.debug(f"BybitWebSocketApiSocket.start_socket() - Received data set from "
                                                  f"stream_id={self.stream_id} transferred to `stream_buffer`!")
                                     self.manager.add_to_stream_buffer(received_stream_data)
 
                             if "error" in received_stream_data_json:
-                                logger.error("BinanceWebSocketApiSocket.start_socket(" +
+                                logger.error("BybitWebSocketApiSocket.start_socket(" +
                                              str(self.stream_id) + ") "
                                              "- Received error message: " + str(received_stream_data_json))
                                 self.manager.add_to_ringbuffer_error(received_stream_data_json)
                             elif "result" in received_stream_data_json:
-                                logger.debug("BinanceWebSocketApiSocket.start_socket(" +
+                                logger.debug("BybitWebSocketApiSocket.start_socket(" +
                                              str(self.stream_id) + ") "
                                              "- Received result message: " + str(received_stream_data_json))
                                 self.manager.add_to_ringbuffer_result(received_stream_data_json)
@@ -215,7 +179,7 @@ class BybitWebSocketApiSocket(object):
                     except asyncio.TimeoutError:
                         # Timeout from `asyncio.wait_for()` which we use to keep the loop running even if we don't
                         # receive new records via websocket.
-                        logger.debug(f"BinanceWebSocketApiSocket.start_socket({str(self.stream_id)}, "
+                        logger.debug(f"BybitWebSocketApiSocket.start_socket({str(self.stream_id)}, "
                                      f"{str(self.channels)}, {str(self.markets)} - Received inner "
                                      f"asyncio.TimeoutError (This is no ERROR, its exactly what we want!)")
                         continue
@@ -230,7 +194,7 @@ class BybitWebSocketApiSocket(object):
                 try:
                     await self.websocket.close()
                 except AttributeError as error_msg:
-                    logger.debug(f"BinanceWebSocketApiSocket.__aexit__() - error_msg: {error_msg}")
+                    logger.debug(f"BybitWebSocketApiSocket.__aexit__() - error_msg: {error_msg}")
 
     def raise_exceptions(self):
         if self.manager.is_stop_request(self.stream_id):

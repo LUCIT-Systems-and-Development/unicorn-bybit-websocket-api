@@ -3,9 +3,9 @@
 <html lang="en" data-content_root="./">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>unicorn-bybit-websocket-api Change Log &#8212; unicorn-bybit-websocket-api 2.8.0 documentation</title><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>unicorn-bybit-websocket-api Change Log &#8212; unicorn-bybit-websocket-api 0.1.0 documentation</title><meta name="viewport" content="width=device-width, initial-scale=1.0">
     
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=92fd9be5" />
     <link rel="stylesheet" type="text/css" href="_static/pydoctheme.css?v=fdf8e9ae" />
@@ -65,8 +65,8 @@
     <h3><a href="index.html">Table of Contents</a></h3>
     <ul>
 <li><a class="reference internal" href="#">unicorn-bybit-websocket-api Change Log</a><ul>
-<li><a class="reference internal" href="#dev-development-stage-unreleased-unstable">0.0.0.dev (development stage/unreleased/unstable)</a></li>
-<li><a class="reference internal" href="#id1">0.0.0</a></li>
+<li><a class="reference internal" href="#dev-development-stage-unreleased-unstable">0.1.0.dev (development stage/unreleased/unstable)</a></li>
+<li><a class="reference internal" href="#id1">0.1.0</a></li>
 </ul>
 </li>
 </ul>
@@ -129,7 +129,7 @@
     </div>
 </div>
   
-    <div class="related" role="navigation" aria-label="related navigation">
+    <div class="related" role="navigation" aria-label="Related">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -187,10 +187,24 @@
 <p><a class="reference external" href="https://github.com/LUCIT-Systems-and-Development/unicorn-bybit-websocket-api/discussions/categories/releases">Discussions about unicorn-bybit-websocket-api releases!</a></p>
 <p><a class="reference external" href="https://unicorn-bybit-websocket-api.docs.lucit.tech/readme.html#installation-and-upgrade">How to upgrade to the latest version!</a></p>
 <section id="dev-development-stage-unreleased-unstable">
-<h2>0.0.0.dev (development stage/unreleased/unstable)<a class="headerlink" href="#dev-development-stage-unreleased-unstable" title="Link to this heading">¶</a></h2>
+<h2>0.1.0.dev (development stage/unreleased/unstable)<a class="headerlink" href="#dev-development-stage-unreleased-unstable" title="Link to this heading">¶</a></h2>
 </section>
 <section id="id1">
-<h2>0.0.0<a class="headerlink" href="#id1" title="Link to this heading">¶</a></h2>
+<h2>0.1.0<a class="headerlink" href="#id1" title="Link to this heading">¶</a></h2>
+<p>BETA VERSION</p>
+<p>The core functions work. Websocket connections to public endpoints can be established and are stable. (No long-term tests!)</p>
+<p>Example usage:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">unicorn_bybit_websocket_api</span> <span class="kn">import</span> <span class="n">BybitWebSocketApiManager</span>
+
+<span class="n">bybit_wsm</span> <span class="o">=</span> <span class="n">BybitWebSocketApiManager</span><span class="p">(</span><span class="n">exchange</span><span class="o">=</span><span class="s2">&quot;bybit.com&quot;</span><span class="p">)</span>
+<span class="n">bybit_wsm</span><span class="o">.</span><span class="n">create_stream</span><span class="p">(</span><span class="n">endpoint</span><span class="o">=</span><span class="s2">&quot;public/linear&quot;</span><span class="p">,</span> <span class="n">channels</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;kline.1&#39;</span><span class="p">],</span> <span class="n">markets</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;btcusdt&#39;</span><span class="p">,</span> <span class="s1">&#39;ethusdt&#39;</span><span class="p">])</span>
+
+<span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+    <span class="n">oldest_data_from_stream_buffer</span> <span class="o">=</span> <span class="n">bybit_wsm</span><span class="o">.</span><span class="n">pop_stream_data_from_stream_buffer</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">oldest_data_from_stream_buffer</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">oldest_data_from_stream_buffer</span><span class="p">)</span>
+</pre></div>
+</div>
 </section>
 </section>
 
@@ -199,7 +213,7 @@
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
         <div class="sphinxsidebarwrapper">
             <p class="logo">
                 <div style="text-align: center;">
@@ -219,8 +233,8 @@
     <h3><a href="index.html">Table of Contents</a></h3>
     <ul>
 <li><a class="reference internal" href="#">unicorn-bybit-websocket-api Change Log</a><ul>
-<li><a class="reference internal" href="#dev-development-stage-unreleased-unstable">0.0.0.dev (development stage/unreleased/unstable)</a></li>
-<li><a class="reference internal" href="#id1">0.0.0</a></li>
+<li><a class="reference internal" href="#dev-development-stage-unreleased-unstable">0.1.0.dev (development stage/unreleased/unstable)</a></li>
+<li><a class="reference internal" href="#id1">0.1.0</a></li>
 </ul>
 </li>
 </ul>
@@ -283,7 +297,7 @@
       </div>
       <div class="clearer"></div>
     </div>  
-    <div class="related" role="navigation" aria-label="related navigation">
+    <div class="related" role="navigation" aria-label="Related">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -331,10 +345,10 @@
     <a href="https://docs.lucit.tech">Index of all LUCIT Software Documentation</a><br />
     &copy; <a href="/license.html">Copyright</a> 2023-2023, LUCIT Systems and Development. All Rights Reserved..
     See <a href="/license.html">License</a> for more information.<br />
-    Last updated on Jul 01 2024 at 15:50 (CET).
+    Last updated on Aug 02 2024 at 19:22 (CET).
     <a href="https://github.com/LUCIT-Systems-and-Development/unicorn-bybit-websocket-api/issues/new/choose">Found a bug</a>?
     <br />
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.4.7.
         with <a href="https://github.com/LUCIT-Systems-and-Development/python-docs-theme-lucit">python-docs-theme-lucit</a>
         by <a href="https://www.lucit.tech">LUCIT Systems and Development</a>.
     </div>

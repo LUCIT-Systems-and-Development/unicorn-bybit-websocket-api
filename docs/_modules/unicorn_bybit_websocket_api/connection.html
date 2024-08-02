@@ -4,7 +4,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>unicorn_bybit_websocket_api.connection &#8212; unicorn-bybit-websocket-api 2.8.0 documentation</title><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>unicorn_bybit_websocket_api.connection &#8212; unicorn-bybit-websocket-api 0.1.0 documentation</title><meta name="viewport" content="width=device-width, initial-scale=1.0">
     
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=92fd9be5" />
     <link rel="stylesheet" type="text/css" href="../../_static/pydoctheme.css?v=fdf8e9ae" />
@@ -98,7 +98,7 @@
     </div>
 </div>
   
-    <div class="related" role="navigation" aria-label="related navigation">
+    <div class="related" role="navigation" aria-label="Related">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -183,14 +183,14 @@
 
 
 <div class="viewcode-block" id="BybitWebSocketApiConnection">
-<a class="viewcode-back" href="../../unicorn_binance_websocket_api.html#unicorn_bybit_websocket_api.connection.BybitWebSocketApiConnection">[docs]</a>
+<a class="viewcode-back" href="../../unicorn_bybit_websocket_api.html#unicorn_bybit_websocket_api.connection.BybitWebSocketApiConnection">[docs]</a>
 <span class="k">class</span> <span class="nc">BybitWebSocketApiConnection</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                  <span class="n">manager</span><span class="p">,</span>
                  <span class="n">stream_id</span><span class="p">,</span>
                  <span class="n">channels</span><span class="p">,</span>
-                 <span class="n">markets</span><span class="p">,</span>
-                 <span class="n">symbols</span><span class="p">):</span>
+                 <span class="n">endpoint</span><span class="p">,</span>
+                 <span class="n">markets</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">manager</span> <span class="o">=</span> <span class="n">manager</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">stream_id</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">stream_id</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">api_key</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">manager</span><span class="o">.</span><span class="n">stream_list</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">stream_id</span><span class="p">][</span><span class="s1">&#39;api_key&#39;</span><span class="p">])</span>
@@ -199,21 +199,20 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">ping_timeout</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">manager</span><span class="o">.</span><span class="n">stream_list</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">stream_id</span><span class="p">][</span><span class="s1">&#39;ping_timeout&#39;</span><span class="p">])</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">close_timeout</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">manager</span><span class="o">.</span><span class="n">stream_list</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">stream_id</span><span class="p">][</span><span class="s1">&#39;close_timeout&#39;</span><span class="p">])</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">channels</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">channels</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">endpoint</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">endpoint</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">markets</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">markets</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">symbols</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">symbols</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">websocket</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">api</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">manager</span><span class="o">.</span><span class="n">stream_list</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">stream_id</span><span class="p">][</span><span class="s1">&#39;api&#39;</span><span class="p">])</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">add_timeout</span> <span class="o">=</span> <span class="kc">True</span> <span class="k">if</span> <span class="s2">&quot;!userData&quot;</span> <span class="ow">in</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">channels</span><span class="si">}{</span><span class="n">markets</span><span class="si">}</span><span class="s2">&quot;</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">api</span> <span class="ow">is</span> <span class="kc">True</span> <span class="k">else</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_timeout</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">timeout_disabled</span> <span class="o">=</span> <span class="kc">False</span>
 
     <span class="k">async</span> <span class="k">def</span> <span class="fm">__aenter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Entering with-context of BybitWebSocketApiConnection() ...&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">raise_exceptions</span><span class="p">()</span>
         <span class="n">uri</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">manager</span><span class="o">.</span><span class="n">create_websocket_uri</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">channels</span><span class="p">,</span>
+                                                <span class="bp">self</span><span class="o">.</span><span class="n">endpoint</span><span class="p">,</span>
                                                 <span class="bp">self</span><span class="o">.</span><span class="n">markets</span><span class="p">,</span>
-                                                <span class="bp">self</span><span class="o">.</span><span class="n">stream_id</span><span class="p">,</span>
-                                                <span class="n">symbols</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">symbols</span><span class="p">,</span>
-                                                <span class="n">api</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">manager</span><span class="o">.</span><span class="n">stream_list</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">stream_id</span><span class="p">][</span><span class="s1">&#39;api&#39;</span><span class="p">])</span>
+                                                <span class="bp">self</span><span class="o">.</span><span class="n">stream_id</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">manager</span><span class="o">.</span><span class="n">subscribe_to_stream</span><span class="p">(</span><span class="n">stream_id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">stream_id</span><span class="p">,</span> <span class="n">channels</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">channels</span><span class="p">,</span> <span class="n">markets</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">markets</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">uri</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="c1"># cant get a valid URI, so this stream has to crash</span>
             <span class="n">error_msg</span> <span class="o">=</span> <span class="s2">&quot;Probably no internet connection?&quot;</span>
@@ -311,7 +310,7 @@
         <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_conn</span><span class="o">.</span><span class="fm">__aexit__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
 <div class="viewcode-block" id="BybitWebSocketApiConnection.close">
-<a class="viewcode-back" href="../../unicorn_binance_websocket_api.html#unicorn_bybit_websocket_api.connection.BybitWebSocketApiConnection.close">[docs]</a>
+<a class="viewcode-back" href="../../unicorn_bybit_websocket_api.html#unicorn_bybit_websocket_api.connection.BybitWebSocketApiConnection.close">[docs]</a>
     <span class="k">async</span> <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;BybitWebSocketApiConnection.close(</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stream_id</span><span class="p">)</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">manager</span><span class="o">.</span><span class="n">set_heartbeat</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stream_id</span><span class="p">)</span>
@@ -319,7 +318,7 @@
 
 
 <div class="viewcode-block" id="BybitWebSocketApiConnection.receive">
-<a class="viewcode-back" href="../../unicorn_binance_websocket_api.html#unicorn_bybit_websocket_api.connection.BybitWebSocketApiConnection.receive">[docs]</a>
+<a class="viewcode-back" href="../../unicorn_bybit_websocket_api.html#unicorn_bybit_websocket_api.connection.BybitWebSocketApiConnection.receive">[docs]</a>
     <span class="k">async</span> <span class="k">def</span> <span class="nf">receive</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;BybitWebSocketApiConnection.receive(</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stream_id</span><span class="p">)</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">raise_exceptions</span><span class="p">()</span>
@@ -345,7 +344,7 @@
 
 
 <div class="viewcode-block" id="BybitWebSocketApiConnection.send">
-<a class="viewcode-back" href="../../unicorn_binance_websocket_api.html#unicorn_bybit_websocket_api.connection.BybitWebSocketApiConnection.send">[docs]</a>
+<a class="viewcode-back" href="../../unicorn_bybit_websocket_api.html#unicorn_bybit_websocket_api.connection.BybitWebSocketApiConnection.send">[docs]</a>
     <span class="k">async</span> <span class="k">def</span> <span class="nf">send</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;BybitWebSocketApiConnection.send(</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stream_id</span><span class="p">)</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">raise_exceptions</span><span class="p">()</span>
@@ -356,7 +355,7 @@
 
 
 <div class="viewcode-block" id="BybitWebSocketApiConnection.raise_exceptions">
-<a class="viewcode-back" href="../../unicorn_binance_websocket_api.html#unicorn_bybit_websocket_api.connection.BybitWebSocketApiConnection.raise_exceptions">[docs]</a>
+<a class="viewcode-back" href="../../unicorn_bybit_websocket_api.html#unicorn_bybit_websocket_api.connection.BybitWebSocketApiConnection.raise_exceptions">[docs]</a>
     <span class="k">def</span> <span class="nf">raise_exceptions</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">manager</span><span class="o">.</span><span class="n">is_stop_request</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stream_id</span><span class="p">):</span>
             <span class="k">raise</span> <span class="n">StreamIsStopping</span><span class="p">(</span><span class="n">stream_id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">stream_id</span><span class="p">,</span> <span class="n">reason</span><span class="o">=</span><span class="s2">&quot;stop request&quot;</span><span class="p">)</span>
@@ -370,7 +369,7 @@
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
         <div class="sphinxsidebarwrapper">
             <p class="logo">
                 <div style="text-align: center;">
@@ -426,7 +425,7 @@
       </div>
       <div class="clearer"></div>
     </div>  
-    <div class="related" role="navigation" aria-label="related navigation">
+    <div class="related" role="navigation" aria-label="Related">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -469,10 +468,10 @@
     <a href="https://docs.lucit.tech">Index of all LUCIT Software Documentation</a><br />
     &copy; <a href="/license.html">Copyright</a> 2023-2023, LUCIT Systems and Development. All Rights Reserved..
     See <a href="/license.html">License</a> for more information.<br />
-    Last updated on Jul 01 2024 at 11:27 (CET).
+    Last updated on Aug 02 2024 at 19:02 (CET).
     <a href="https://github.com/LUCIT-Systems-and-Development/unicorn-bybit-websocket-api/issues/new/choose">Found a bug</a>?
     <br />
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.4.7.
         with <a href="https://github.com/LUCIT-Systems-and-Development/python-docs-theme-lucit">python-docs-theme-lucit</a>
         by <a href="https://www.lucit.tech">LUCIT Systems and Development</a>.
     </div>

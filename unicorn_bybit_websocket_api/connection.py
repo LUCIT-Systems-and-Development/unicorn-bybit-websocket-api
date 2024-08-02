@@ -89,11 +89,11 @@ class BybitWebSocketApiConnection(object):
                     # -11001 = Isolated margin account does not exist.
                     # Can not get a valid listen_key, so this stream has to crash:
                     logger.critical(f"BybitWebSocketApiConnection.__aenter__(stream_id={self.stream_id}), channels="
-                                    f"{self.channels}), markets={self.markets}) - error: 4 - Binance API: "
+                                    f"{self.channels}), markets={self.markets}) - error: 4 - Bybit API: "
                                     f"{str(uri['msg'])}")
                 else:
                     logger.critical(f"BybitWebSocketApiConnection.__aenter__(stream_id={self.stream_id}), channels="
-                                    f"{self.channels}), markets={self.markets}) - error: 2 - Binance API: "
+                                    f"{self.channels}), markets={self.markets}) - error: 2 - Bybit API: "
                                     f"{str(uri['msg'])}")
                 raise StreamIsCrashing(stream_id=self.stream_id, reason=uri['msg'])
         except KeyError as error_msg:

@@ -1,3 +1,5 @@
+# ***BETA, NOT FOR PRODUCTIVE USE!!!***
+
 [![Get a UNICORN Trading Suite License](https://raw.githubusercontent.com/LUCIT-Systems-and-Development/unicorn-binance-suite/master/images/logo/LUCIT-UTS-License-Offer.png)](https://shop.lucit.services/software/unicorn-trading-suite)
 
 [![GitHub Release](https://img.shields.io/github/release/LUCIT-Systems-and-Development/unicorn-bybit-websocket-api.svg?label=github)](https://github.com/LUCIT-Systems-and-Development/unicorn-bybit-websocket-api/releases)
@@ -48,15 +50,15 @@ To run modules of the *UNICORN Trading Suite* you need a [valid license](https:/
 ```
 from unicorn_bybit_websocket_api import BybitWebSocketApiManager
 
-ubwa = BybitWebSocketApiManager(exchange="bybit.com")
-ubwa.create_stream(channels=['trade', 'kline_1m'], markets=['btcusdt', 'bnbbtc', 'ethbtc'])
+bybit_wsm = BybitWebSocketApiManager(exchange="bybit.com")
+bybit_wsm.create_stream(endpoint="public/linear", channels=['kline.1'], markets=['btcusdt', 'bnbbtc', 'ethbtc'])
 ```
 
 #### And 4 more lines to print out the data
 
 ```
 while True:
-    oldest_data_from_stream_buffer = ubwa.pop_stream_data_from_stream_buffer()
+    oldest_data_from_stream_buffer = bybit_wsm.pop_stream_data_from_stream_buffer()
     if oldest_data_from_stream_buffer:
         print(oldest_data_from_stream_buffer)
 ```
@@ -69,10 +71,10 @@ from unicorn_bybit_websocket_api import BybitWebSocketApiManager
 def process_new_receives(stream_data):
     print(str(stream_data))
 
-ubwa = BybitWebSocketApiManager(exchange="bybit.com")
-ubwa.create_stream(channels=['trade', 'kline_1m'], 
-                   markets=['btcusdt', 'bnbbtc', 'ethbtc'], 
-                   process_stream_data=process_new_receives)
+bybit_wsm = BybitWebSocketApiManager(exchange="bybit.com")
+bybit_wsm.create_stream(endpoint="public/linear", channels=['kline.1m'], 
+                        markets=['btcusdt', 'bnbbtc', 'ethbtc'], 
+                        process_stream_data=process_new_receives)
 ```
 
 ### Or with an [async callback function](https://unicorn-bybit-websocket-api.docs.lucit.tech/unicorn_bybit_websocket_api.html?highlight=process_stream_data#unicorn_bybit_websocket_api.manager.BybitWebSocketApiManager.create_stream) just do
@@ -85,10 +87,10 @@ async def process_new_receives(stream_data):
     print(stream_data)
     await asyncio.sleep(1)
 
-ubwa = BybitWebSocketApiManager()
-ubwa.create_stream(channels=['trade', 'kline_1m'],
-                   markets=['btcusdt', 'bnbbtc', 'ethbtc'],
-                   process_stream_data_async=process_new_receives)
+bybit_wsm = BybitWebSocketApiManager()
+bybit_wsm.create_stream(endpoint="public/linear", channels=['kline_1m'],
+                        markets=['btcusdt', 'bnbbtc', 'ethbtc'],
+                        process_stream_data_async=process_new_receives)
 ```
 
 ### Or await the stream data in an asyncio coroutine
@@ -102,19 +104,20 @@ import asyncio
 
 async def main():
     async def process_asyncio_queue(stream_id=None):
-        print(f"Start processing the data from stream '{ubwa.get_stream_label(stream_id)}':")
-        while ubwa.is_stop_request(stream_id) is False:
-            data = await ubwa.get_stream_data_from_asyncio_queue(stream_id)
+        print(f"Start processing the data from stream '{bybit_wsm.get_stream_label(stream_id)}':")
+        while bybit_wsm.is_stop_request(stream_id) is False:
+            data = await bybit_wsm.get_stream_data_from_asyncio_queue(stream_id)
             print(data)
-            ubwa.asyncio_queue_task_done(stream_id)
-    ubwa.create_stream(channels=['trade'],
-                       markets=['ethbtc', 'btcusdt'],
-                       stream_label="TRADES",
-                       process_asyncio_queue=process_asyncio_queue)
-    while not ubwa.is_manager_stopping():
+            bybit_wsm.asyncio_queue_task_done(stream_id)
+    bybit_wsm.create_stream(endpoint="public/linear",
+                            channels=['trade'],
+                            markets=['ethbtc', 'btcusdt'],
+                            stream_label="KLINE_1m",
+                            process_asyncio_queue=process_asyncio_queue)
+    while not bybit_wsm.is_manager_stopping():
             await asyncio.sleep(1)
 
-with BybitWebSocketApiManager(exchange='bybit.com') as ubwa:
+with BybitWebSocketApiManager(exchange='bybit.com') as bybit_wsm:
     try:
         asyncio.run(main())
     except KeyboardInterrupt:
@@ -126,31 +129,31 @@ with BybitWebSocketApiManager(exchange='bybit.com') as ubwa:
 Basically that's it, but there are more options.
 
 ## [Subscribe](https://unicorn-bybit-websocket-api.docs.lucit.tech/unicorn_bybit_websocket_api.html#unicorn_bybit_websocket_api.manager.BybitWebSocketApiManager.subscribe_to_stream) / [unsubscribe](https://unicorn-bybit-websocket-api.docs.lucit.tech/unicorn_bybit_websocket_api.html#unicorn_bybit_websocket_api.manager.BybitWebSocketApiManager.unsubscribe_from_stream) new markets and channels
-
+# Todo!!!
 ```
 markets = ['engbtc', 'zileth']
 channels = ['kline_5m', 'kline_15m', 'kline_30m', 'kline_1h', 'kline_12h', 'depth5']
 
-ubwa.subscribe_to_stream(stream_id=stream_id, channels=channels, markets=markets)
+bybit_wsm.subscribe_to_stream(stream_id=stream_id, channels=channels, markets=markets)
 
-ubwa.unsubscribe_from_stream(stream_id=stream_id, markets=markets)
+bybit_wsm.unsubscribe_from_stream(stream_id=stream_id, markets=markets)
 
-ubwa.unsubscribe_from_stream(stream_id=stream_id, channels=channels)
+bybit_wsm.unsubscribe_from_stream(stream_id=stream_id, channels=channels)
 ```
 
-## Stop `ubwa` after usage to avoid memory leaks
+## Stop `bybit_wsm` after usage to avoid memory leaks
 
-When you instantiate UBWA with `with`, `ubwa.stop_manager()` is automatically executed upon exiting the `with`-block.
-
-```
-with BybitWebSocketApiManager() as ubwa:
-    ubwa.create_stream(channels="trade", markets="btcusdt", stream_label="TRADES")
-```
-
-Without `with`, you must explicitly execute `ubwa.stop_manager()` yourself.
+When you instantiate UNICORN Bybit Websocket API with `with`, `bybit_wsm.stop_manager()` is automatically executed upon exiting the `with`-block.
 
 ```
-ubwa.stop_manager()
+with BybitWebSocketApiManager() as bybit_wsm:
+    bybit_wsm.create_stream(channels="kline.1", markets="btcusdt", stream_label="KLINE_1m")
+```
+
+Without `with`, you must explicitly execute `bybit_wsm.stop_manager()` yourself.
+
+```
+bybit_wsm.stop_manager()
 ```
 
 ## `stream_signals` - know the state of your streams
@@ -168,11 +171,11 @@ from unicorn_bybit_websocket_api import BybitWebSocketApiManager
 import time
 
 def process_stream_signals(signal_type=None, stream_id=None, data_record=None, error_msg=None):
-    print(f"Received stream_signal for stream '{ubwa.get_stream_label(stream_id=stream_id)}': "
+    print(f"Received stream_signal for stream '{bybit_wsm.get_stream_label(stream_id=stream_id)}': "
           f"{signal_type} - {stream_id} - {data_record} - {error_msg}")
 
-with BybitWebSocketApiManager(process_stream_signals=process_stream_signals) as ubwa:
-    ubwa.create_stream(channels="trade", markets="btcusdt", stream_label="TRADES")
+with BybitWebSocketApiManager(process_stream_signals=process_stream_signals) as bybit_wsm:
+    bybit_wsm.create_stream(channels="trade", markets="btcusdt", stream_label="TRADES")
     time.sleep(2)
     print(f"Waiting 5 seconds and then stop the stream ...")
     time.sleep(5)
@@ -191,12 +194,8 @@ This should be known by everyone using this lib:
 
 ## Description
 The Python package [UNICORN Bybit WebSocket API](https://www.lucit.tech/unicorn-bybit-websocket-api.html) 
-provides an API to the Bybit Websocket API`s of 
-[bybit](https://github.com/bybit-exchange/bybit-official-api-docs) 
-([+Testnet](https://testnet.bybit.com/)), 
-[Bybit Margin](https://bybit-docs.github.io/apidocs/spot/en/#user-data-streams) 
-([+Testnet](https://testnet.bybit.com/)), 
-
+provides an API to the [Bybit Websocket API`s](https://bybit-exchange.github.io/docs) of [Bybit](https://www.bybit.com)
+([+Testnet](https://testnet.bybit.com)).
 
 ### What are the benefits of the UNICORN Bybit WebSocket API?
 - Fully managed websockets and 100% auto-reconnect! Also handles maintenance windows!
@@ -208,9 +207,9 @@ provides an API to the Bybit Websocket API`s of
 
 - [Supported exchanges](https://github.com/LUCIT-Systems-and-Development/unicorn-bybit-websocket-api/wiki/Bybit-websocket-endpoint-configuration-overview): 
 
-| Exchange                                       | Exchange string     | WS                                                                                                                                   | WS API                                                                                                                               |
-|------------------------------------------------|---------------------|--------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------|
-| [Bybit](https://www.bybit.com)                 | `bybit.com`         | ![yes](https://raw.githubusercontent.com/lucit-systems-and-development/unicorn-bybit-websocket-api/master/images/misc/ok-icon.png) | ![yes](https://raw.githubusercontent.com/lucit-systems-and-development/unicorn-bybit-websocket-api/master/images/misc/ok-icon.png) |
+| Exchange                                   | Exchange string     | WS                                                                                                                                 | WS API                                                                                                                             |
+|--------------------------------------------|---------------------|------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------|
+| [Bybit](https://www.bybit.com)             | `bybit.com`         | ![yes](https://raw.githubusercontent.com/lucit-systems-and-development/unicorn-bybit-websocket-api/master/images/misc/ok-icon.png) | ![yes](https://raw.githubusercontent.com/lucit-systems-and-development/unicorn-bybit-websocket-api/master/images/misc/ok-icon.png) |
 | [Bybit Testnet](https://testnet.bybit.com) | `bybit.com-testnet` | ![yes](https://raw.githubusercontent.com/lucit-systems-and-development/unicorn-bybit-websocket-api/master/images/misc/ok-icon.png) | ![yes](https://raw.githubusercontent.com/lucit-systems-and-development/unicorn-bybit-websocket-api/master/images/misc/ok-icon.png) |
 
 
@@ -293,7 +292,7 @@ and specific streams with
 - *Socks5 Proxy* support:
 
   ```
-  ubwa = BybitWebSocketApiManager(exchange="bybit.com", socks5_proxy_server="127.0.0.1:9050") 
+  bybit_wsm = BybitWebSocketApiManager(exchange="bybit.com", socks5_proxy_server="127.0.0.1:9050") 
   ```
   
   Read the [docs](https://unicorn-bybit-websocket-api.docs.lucit.tech/unicorn_bybit_websocket_api.html#unicorn_bybit_websocket_api.manager.BybitWebSocketApiManager)
@@ -379,10 +378,10 @@ Run in bash:
 `pip install https://github.com/LUCIT-Systems-and-Development/unicorn-bybit-websocket-api/archive/$(curl -s https://api.github.com/repos/LUCIT-Systems-and-Development/unicorn-bybit-websocket-api/releases/latest | grep -oP '"tag_name": "\K(.*)(?=")').tar.gz --upgrade`
 
 #### Windows
-Use the below command with the version (such as 2.8.0) you determined 
+Use the below command with the version (such as 0.1.0) you determined 
 [here](https://github.com/LUCIT-Systems-and-Development/unicorn-bybit-websocket-api/releases/latest):
 
-`pip install https://github.com/LUCIT-Systems-and-Development/unicorn-bybit-websocket-api/archive/2.8.0.tar.gz --upgrade`
+`pip install https://github.com/LUCIT-Systems-and-Development/unicorn-bybit-websocket-api/archive/0.1.0.tar.gz --upgrade`
 ### From the latest source (dev-stage) with PIP from [GitHub](https://github.com/LUCIT-Systems-and-Development/unicorn-bybit-websocket-api)
 This is not a release version and can not be considered to be stable!
 
@@ -412,6 +411,9 @@ This is not a release version and can not be considered to be stable!
 - [Discussions](https://github.com/LUCIT-Systems-and-Development/unicorn-bybit-websocket-api/discussions)
 - [Gitter](https://gitter.im/unicorn-trading-suite/unicorn-bybit-websocket-api)
 - [https://t.me/unicorndevs](https://t.me/unicorndevs)
+- [Telegram - English API Community](https://t.me/BybitAPI)
+- [Telegram - Chinese API Community](https://t.me/BybitChineseAPI)
+- [Discord](https://discord.gg/VBwVwS2HUs)
 
 ## Receive Notifications
 To receive notifications on available updates you can 
@@ -428,7 +430,9 @@ Follow us on [LinkedIn](https://www.linkedin.com/company/lucit-systems-and-devel
 
 To receive news (like inspection windows/maintenance) about the Bybit API`s subscribe to their telegram groups: 
 
-- [https://t.me/BybitEnglish/2486566](https://t.me/BybitEnglish/2486566)
+- [Bybit English](https://t.me/BybitEnglish)
+- [Bybit Announcements](https://t.me/Bybit_Announcements)
+
 
 ## How to report Bugs or suggest Improvements?
 [List of planned features](https://github.com/LUCIT-Systems-and-Development/unicorn-bybit-websocket-api/issues?q=is%3Aissue+is%3Aopen+label%3Aenhancement) - click ![thumbs-up](https://raw.githubusercontent.com/lucit-systems-and-development/unicorn-bybit-websocket-api/master/images/misc/thumbup.png) if you need one of them or suggest a new feature!

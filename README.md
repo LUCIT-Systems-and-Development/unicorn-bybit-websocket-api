@@ -1,4 +1,4 @@
-# ***NOT READY FOR USE!!!***
+# ***BETA, NOT FOR PRODUCTIVE USE!!!***
 
 [![Get a UNICORN Trading Suite License](https://raw.githubusercontent.com/LUCIT-Systems-and-Development/unicorn-binance-suite/master/images/logo/LUCIT-UTS-License-Offer.png)](https://shop.lucit.services/software/unicorn-trading-suite)
 
@@ -112,7 +112,7 @@ async def main():
     bybit_wsm.create_stream(endpoint="public/linear",
                             channels=['trade'],
                             markets=['ethbtc', 'btcusdt'],
-                            stream_label="TRADES",
+                            stream_label="KLINE_1m",
                             process_asyncio_queue=process_asyncio_queue)
     while not bybit_wsm.is_manager_stopping():
             await asyncio.sleep(1)
@@ -129,7 +129,7 @@ with BybitWebSocketApiManager(exchange='bybit.com') as bybit_wsm:
 Basically that's it, but there are more options.
 
 ## [Subscribe](https://unicorn-bybit-websocket-api.docs.lucit.tech/unicorn_bybit_websocket_api.html#unicorn_bybit_websocket_api.manager.BybitWebSocketApiManager.subscribe_to_stream) / [unsubscribe](https://unicorn-bybit-websocket-api.docs.lucit.tech/unicorn_bybit_websocket_api.html#unicorn_bybit_websocket_api.manager.BybitWebSocketApiManager.unsubscribe_from_stream) new markets and channels
-
+# Todo!!!
 ```
 markets = ['engbtc', 'zileth']
 channels = ['kline_5m', 'kline_15m', 'kline_30m', 'kline_1h', 'kline_12h', 'depth5']
@@ -147,7 +147,7 @@ When you instantiate UNICORN Bybit Websocket API with `with`, `bybit_wsm.stop_ma
 
 ```
 with BybitWebSocketApiManager() as bybit_wsm:
-    bybit_wsm.create_stream(channels="trade", markets="btcusdt", stream_label="TRADES")
+    bybit_wsm.create_stream(channels="kline.1", markets="btcusdt", stream_label="KLINE_1m")
 ```
 
 Without `with`, you must explicitly execute `bybit_wsm.stop_manager()` yourself.
@@ -378,10 +378,10 @@ Run in bash:
 `pip install https://github.com/LUCIT-Systems-and-Development/unicorn-bybit-websocket-api/archive/$(curl -s https://api.github.com/repos/LUCIT-Systems-and-Development/unicorn-bybit-websocket-api/releases/latest | grep -oP '"tag_name": "\K(.*)(?=")').tar.gz --upgrade`
 
 #### Windows
-Use the below command with the version (such as 0.0.0) you determined 
+Use the below command with the version (such as 0.1.0) you determined 
 [here](https://github.com/LUCIT-Systems-and-Development/unicorn-bybit-websocket-api/releases/latest):
 
-`pip install https://github.com/LUCIT-Systems-and-Development/unicorn-bybit-websocket-api/archive/0.0.0.tar.gz --upgrade`
+`pip install https://github.com/LUCIT-Systems-and-Development/unicorn-bybit-websocket-api/archive/0.1.0.tar.gz --upgrade`
 ### From the latest source (dev-stage) with PIP from [GitHub](https://github.com/LUCIT-Systems-and-Development/unicorn-bybit-websocket-api)
 This is not a release version and can not be considered to be stable!
 

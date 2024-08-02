@@ -4,7 +4,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>unicorn_bybit_websocket_api.restclient &#8212; unicorn-bybit-websocket-api 2.8.0 documentation</title><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>unicorn_bybit_websocket_api.restclient &#8212; unicorn-bybit-websocket-api 0.1.0 documentation</title><meta name="viewport" content="width=device-width, initial-scale=1.0">
     
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=92fd9be5" />
     <link rel="stylesheet" type="text/css" href="../../_static/pydoctheme.css?v=fdf8e9ae" />
@@ -98,7 +98,7 @@
     </div>
 </div>
   
-    <div class="related" role="navigation" aria-label="related navigation">
+    <div class="related" role="navigation" aria-label="Related">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -167,6 +167,7 @@
 
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span>
 <span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">requests</span>
 <span class="kn">import</span> <span class="nn">threading</span>
 
 
@@ -176,7 +177,7 @@
 
 
 <div class="viewcode-block" id="BybitWebSocketApiRestclient">
-<a class="viewcode-back" href="../../unicorn_binance_websocket_api.html#unicorn_bybit_websocket_api.restclient.BybitWebSocketApiRestclient">[docs]</a>
+<a class="viewcode-back" href="../../unicorn_bybit_websocket_api.html#unicorn_bybit_websocket_api.restclient.BybitWebSocketApiRestclient">[docs]</a>
 <span class="k">class</span> <span class="nc">BybitWebSocketApiRestclient</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                  <span class="n">debug</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
@@ -193,7 +194,6 @@
                  <span class="n">socks5_proxy_pass</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">socks5_proxy_ssl_verification</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
                  <span class="n">stream_list</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                 <span class="n">ubra</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>  <span class="c1"># Todo!</span>
                  <span class="n">warn_on_update</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Create a restclient instance!</span>
@@ -215,7 +215,15 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">socks5_proxy_ssl_verification</span> <span class="o">=</span> <span class="n">socks5_proxy_ssl_verification</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">stream_list</span> <span class="o">=</span> <span class="n">stream_list</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">warn_on_update</span> <span class="o">=</span> <span class="n">warn_on_update</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">sigterm</span> <span class="o">=</span> <span class="kc">False</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sigterm</span> <span class="o">=</span> <span class="kc">False</span>
+
+<div class="viewcode-block" id="BybitWebSocketApiRestclient.get_symbols">
+<a class="viewcode-back" href="../../unicorn_bybit_websocket_api.html#unicorn_bybit_websocket_api.restclient.BybitWebSocketApiRestclient.get_symbols">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_symbols</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;https://api.bybit.com/v2/public/symbols&quot;</span><span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">data</span></div>
+</div>
 
 </pre></div>
 
@@ -223,7 +231,7 @@
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
         <div class="sphinxsidebarwrapper">
             <p class="logo">
                 <div style="text-align: center;">
@@ -279,7 +287,7 @@
       </div>
       <div class="clearer"></div>
     </div>  
-    <div class="related" role="navigation" aria-label="related navigation">
+    <div class="related" role="navigation" aria-label="Related">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -322,10 +330,10 @@
     <a href="https://docs.lucit.tech">Index of all LUCIT Software Documentation</a><br />
     &copy; <a href="/license.html">Copyright</a> 2023-2023, LUCIT Systems and Development. All Rights Reserved..
     See <a href="/license.html">License</a> for more information.<br />
-    Last updated on Jul 01 2024 at 11:27 (CET).
+    Last updated on Aug 02 2024 at 19:02 (CET).
     <a href="https://github.com/LUCIT-Systems-and-Development/unicorn-bybit-websocket-api/issues/new/choose">Found a bug</a>?
     <br />
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.4.7.
         with <a href="https://github.com/LUCIT-Systems-and-Development/python-docs-theme-lucit">python-docs-theme-lucit</a>
         by <a href="https://www.lucit.tech">LUCIT Systems and Development</a>.
     </div>

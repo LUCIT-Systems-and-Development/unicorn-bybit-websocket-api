@@ -90,7 +90,7 @@ jobs:
           generate_release_notes: true
           name: unicorn-bybit-websocket-api
           prerelease: false
-          tag_name: 0.0.0
+          tag_name: 0.1.0
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create PyPi Release

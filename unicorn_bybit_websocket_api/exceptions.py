@@ -26,7 +26,7 @@ class MaximumSubscriptionsExceeded(Exception):
     def __init__(self, exchange: str = None, max_subscriptions_per_stream: int = None):
         self.message = (f"The maximum number of {max_subscriptions_per_stream} subscriptions per stream for exchange "
                         f"'{exchange}' has been exceeded! For detailed information please have a look at our wiki: "
-                        f"https://github.com/LUCIT-Systems-and-Development/unicorn-bybit-websocket-api/wiki/Binance-"
+                        f"https://github.com/LUCIT-Systems-and-Development/unicorn-bybit-websocket-api/wiki/Bybit-"
                         f"websocket-endpoint-configuration-overview")
         super().__init__(self.message)
 

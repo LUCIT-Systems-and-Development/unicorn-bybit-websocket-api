@@ -34,7 +34,7 @@ class BybitWebSocketApiRestclient(object):
     def __init__(self,
                  debug: Optional[bool] = False,
                  disable_colorama: Optional[bool] = False,
-                 exchange: Optional[str] = "binance.com",
+                 exchange: Optional[str] = "bybit.com",
                  lucit_api_secret: Optional[str] = None,
                  lucit_license_ini: str = None,
                  lucit_license_profile: Optional[str] = None,

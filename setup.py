@@ -56,7 +56,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name=name,
-    version="0.0.0",
+    version="0.1.0",
     author="LUCIT Systems and Development",
     author_email='info@lucit.tech',
     url="https://github.com/LUCIT-Systems-and-Development/unicorn-bybit-websocket-api",
@@ -89,7 +89,7 @@ setup(
     package_data={'': ['*.so', '*.dll', '*.py', '*.pyd', '*.pyi']},
     include_package_data=True,
     classifiers=[
-        "Development Status :: 5 - Production/Stable",
+        "Development Status :: 5 - Production/Beta",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",

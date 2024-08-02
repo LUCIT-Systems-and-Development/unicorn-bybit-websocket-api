@@ -16,7 +16,7 @@ async def main():
         print(f"Start processing the data from stream '{bybit_wsm.get_stream_label(stream_id)}':")
         while bybit_wsm.is_stop_request(stream_id) is False:
             data = await bybit_wsm.get_stream_data_from_asyncio_queue(stream_id)
-            #print(data)
+            print(data)
             bybit_wsm.asyncio_queue_task_done(stream_id)
 
     symbols = []

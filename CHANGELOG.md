@@ -14,13 +14,17 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 ## 0.1.0
 BETA VERSION
 
-The core functions work. Websocket connections to public endpoints can be established and are stable. (No long-term tests)
+The core functions work. Websocket connections to public endpoints can be established and are stable. (No long-term tests!)
 
 Example usage:
 ````
-    bybit_wsm.create_stream(endpoint="public/linear",
-                            channels="kline.1",
-                            markets=symbols,
-                            stream_label="KLINE_1m",
-                            process_asyncio_queue=process_asyncio_queue)
+from unicorn_bybit_websocket_api import BybitWebSocketApiManager
+
+bybit_wsm = BybitWebSocketApiManager(exchange="bybit.com")
+bybit_wsm.create_stream(endpoint="public/linear", channels=['kline.1'], markets=['btcusdt', 'ethusdt'])
+
+while True:
+    oldest_data_from_stream_buffer = bybit_wsm.pop_stream_data_from_stream_buffer()
+    if oldest_data_from_stream_buffer:
+        print(oldest_data_from_stream_buffer)
 ````

@@ -20,7 +20,7 @@
 # All rights reserved.
 
 from .licensing_manager import LucitLicensingManager, NoValidatedLucitLicense
-from .connection_settings import CEX_EXCHANGES, CONNECTION_SETTINGS
+from .connection_settings import CONNECTION_SETTINGS
 from .exceptions import *
 from .restclient import BybitWebSocketApiRestclient
 from .sockets import BybitWebSocketApiSocket
@@ -57,7 +57,7 @@ import websockets
 
 
 __app_name__: str = "unicorn-bybit-websocket-api"
-__version__: str = "0.0.0.dev"
+__version__: str = "0.1.0.dev"
 __logger__: logging.getLogger = logging.getLogger("unicorn_bybit_websocket_api")
 
 logger = __logger__
@@ -95,12 +95,9 @@ class BybitWebSocketApiManager(threading.Thread):
                                 `create_stream()`! `How to read from stream_buffer!
                                 <https://unicorn-bybit-websocket-api.docs.lucit.tech/README.html#and-4-more-lines-to-print-the-receives>`__
     :type process_stream_data_async: Optional[Callable]
-    :param exchange: Select binance.com, binance.com-testnet, binance.com-margin, binance.com-margin-testnet,
-                     binance.com-isolated_margin, binance.com-isolated_margin-testnet, binance.com-futures,
-                     binance.com-futures-testnet, binance.com-coin_futures, binance.us, trbinance.com,
-                     binance.org, binance.org-testnet (default: binance.com)
+    :param exchange: Select bybit.com, bybit.com-testnet (default: bybit.com)
     :type exchange: str
-    :param warn_on_update: set to `False` to disable the update warning of UBWA and also in UBRA used as submodule.
+    :param warn_on_update: set to `False` to disable the update warning of UBBWA and also in UBBRA used as submodule.
     :type warn_on_update: bool
     :param restart_timeout: A stream restart must be successful within this time, otherwise a new restart will be
                             initialized. Default is 6 seconds.
@@ -130,7 +127,7 @@ class BybitWebSocketApiManager(threading.Thread):
                                    like `process_stream_data(signal_type=False, stream_id=False, data_record=False)`.
     :type process_stream_signals: function
     :param auto_data_cleanup_stopped_streams: The parameter "auto_data_cleanup_stopped_streams=True" can be used to
-                                              inform the UBWA instance that all remaining data of a stopped stream
+                                              inform the UBBWA instance that all remaining data of a stopped stream
                                               should be automatically and completely deleted.
     :type auto_data_cleanup_stopped_streams: bool
     :param close_timeout_default: The `close_timeout` parameter defines a maximum wait time in seconds for
@@ -163,8 +160,6 @@ class BybitWebSocketApiManager(threading.Thread):
     :type websocket_base_uri:  str
     :param max_subscriptions_per_stream_spot: Override the `max_subscriptions_per_stream_spot` value. Example: 1024
     :type max_subscriptions_per_stream_spot:  int
-    :param exchange_type: Override the exchange type. Valid options are: 'cex', 'dex'
-    :type exchange_type:  str
     :param socks5_proxy_server: Set this to activate the usage of a socks5 proxy. Example: '127.0.0.1:9050'
     :type socks5_proxy_server:  str
     :param socks5_proxy_user: Set this to activate the usage of a socks5 proxy user. Example: 'alice'
@@ -173,7 +168,7 @@ class BybitWebSocketApiManager(threading.Thread):
     :type socks5_proxy_pass:  str
     :param socks5_proxy_ssl_verification: Set to `False` to disable SSL server verification. Default is `True`.
     :type socks5_proxy_ssl_verification:  bool
-    :param lucit_api_secret: The `api_secret` of your UNICORN Binance Suite license from
+    :param lucit_api_secret: The `api_secret` of your UNICORN Bybit Suite license from
                              https://shop.lucit.services/software/unicorn-trading-suite
     :type lucit_api_secret:  str
     :param lucit_license_ini: Specify the path including filename to the config file (ex: `~/license_a.ini`). If not
@@ -181,7 +176,7 @@ class BybitWebSocketApiManager(threading.Thread):
     :type lucit_license_ini:  str
     :param lucit_license_profile: The license profile to use. Default is 'LUCIT'.
     :type lucit_license_profile:  str
-    :param lucit_license_token: The `license_token` of your UNICORN Binance Suite license from
+    :param lucit_license_token: The `license_token` of your UNICORN Bybit Suite license from
                                 https://shop.lucit.services/software/unicorn-trading-suite
     :type lucit_license_token:  str
     """
@@ -210,7 +205,6 @@ class BybitWebSocketApiManager(threading.Thread):
                  max_subscriptions_per_stream_linear: Optional[int] = None,
                  max_subscriptions_per_stream_inverse: Optional[int] = None,
                  max_subscriptions_per_stream_option: Optional[int] = None,
-                 exchange_type: Literal['cex', 'dex', None] = None,
                  socks5_proxy_server: str = None,
                  socks5_proxy_user: str = None,
                  socks5_proxy_pass: str = None,
@@ -287,7 +281,7 @@ class BybitWebSocketApiManager(threading.Thread):
         if exchange not in CONNECTION_SETTINGS:
             error_msg = f"Unknown exchange '{str(exchange)}'! List of supported exchanges:\r\n" \
                         f"https://github.com/LUCIT-Systems-and-Development/unicorn-bybit-websocket-api/wiki/" \
-                        f"Binance-websocket-endpoint-configuration-overview"
+                        f"Bybit-websocket-endpoint-configuration-overview"
             logger.critical(error_msg)
             self.stop_manager()
             raise UnknownExchange(error_msg=error_msg)
@@ -320,10 +314,9 @@ class BybitWebSocketApiManager(threading.Thread):
 
         self.asyncio_queue = {}
         self.all_subscriptions_number = 0
-        self.binance_api_status = {'weight': None,
-                                   'timestamp': 0,
-                                   'status_code': None}
-        self.dex_user_address = None
+        self.bybit_api_status = {'weight': None,
+                                 'timestamp': 0,
+                                 'status_code': None}
         self.event_loops = {}
         self.frequent_checks_list = {}
         self.frequent_checks_list_lock = threading.Lock()
@@ -430,12 +423,12 @@ class BybitWebSocketApiManager(threading.Thread):
             logger.debug(f"`process_asyncio_queue` of stream_id {stream_id}{stream_label} completed successfully.")
             return True
         except Exception as error_msg:
-            error_msg_wrapper = (f"Exception within to UBWA`s provided `process_asyncio_queue`-coroutine of stream "
+            error_msg_wrapper = (f"Exception within to UBBWA`s provided `process_asyncio_queue`-coroutine of stream "
                                  f"'{stream_id}'{stream_label}: "
                                  f"\033[1m\033[31m{type(error_msg).__name__} - {error_msg}\033[0m\r\n"
                                  f"{traceback.format_exc()}")
             print(f"\r\n{error_msg_wrapper}")
-            error_msg_wrapper = (f"Exception within to UBWA`s provided `process_asyncio_queue`-coroutine of stream "
+            error_msg_wrapper = (f"Exception within to UBBWA`s provided `process_asyncio_queue`-coroutine of stream "
                                  f"'{stream_id}'{stream_label}: "
                                  f"{type(error_msg).__name__} - {error_msg}\r\n"
                                  f"{traceback.format_exc()}")
@@ -567,9 +560,9 @@ class BybitWebSocketApiManager(threading.Thread):
         . code-block:: python
 
             while True:
-                data = await ubwa.get_stream_data_from_asyncio_queue(stream_id)
+                data = await bybit_wsm.get_stream_data_from_asyncio_queue(stream_id)
                 print(data)
-                ubwa.asyncio_queue_task_done(stream_id)
+                bybit_wsm.asyncio_queue_task_done(stream_id)
         """
         if stream_id is None:
             return False
@@ -679,9 +672,9 @@ class BybitWebSocketApiManager(threading.Thread):
                                    provide a string to create and use a shared stream_buffer and read it via
                                    `pop_stream_data_from_stream_buffer('string')`.
         :type stream_buffer_name: False or str
-        :param api_key: provide a valid Binance API key
+        :param api_key: provide a valid Bybit API key
         :type api_key: str
-        :param api_secret: provide a valid Binance API secret
+        :param api_secret: provide a valid Bybit API secret
         :type api_secret: str
         :param output: the default setting `raw_data` can be globally overwritten with the parameter
                        `output_default <https://unicorn-bybit-websocket-api.docs.lucit.tech/unicorn_bybit_websocket_api.html?highlight=output_default#module-unicorn_bybit_websocket_api.unicorn_bybit_websocket_api_manager>`__
@@ -1141,9 +1134,9 @@ class BybitWebSocketApiManager(threading.Thread):
                     and (self.stream_list[stream_id]['last_static_ping_listen_key'] +
                          self.stream_list[stream_id]['listen_key_cache_time']) < time.time():
                 try:
-                    response, binance_api_status = self.restclient.keepalive_listen_key(stream_id)
-                    if binance_api_status is not None:
-                        self.binance_api_status = binance_api_status
+                    response, bybit_api_status = self.restclient.keepalive_listen_key(stream_id)
+                    if bybit_api_status is not None:
+                        self.bybit_api_status = bybit_api_status
                     with self.stream_list_lock:
                         logger.debug(f"BybitWebSocketApiManager._ping_listen_key() - `stream_list_lock` was entered!")
                         self.stream_list[stream_id]['last_static_ping_listen_key'] = time.time()
@@ -1158,7 +1151,7 @@ class BybitWebSocketApiManager(threading.Thread):
                         await asyncio.sleep(2)
                 except Exception as error_msg:
                     logger.critical(f"BybitWebSocketApiManager._ping_listen_key(stream_id={stream_id}) - "
-                                    f"BinanceAPIException - Not able to ping the listen_key - error: {error_msg}")
+                                    f"BybitAPIException - Not able to ping the listen_key - error: {error_msg}")
                     if "IP banned" in str(error_msg):
                         match = re.search(r"until (\d+)", str(error_msg))
                         if match:
@@ -1406,7 +1399,7 @@ class BybitWebSocketApiManager(threading.Thread):
             for channel in channels:
                 params = {
                     "op": "subscribe",
-                    "args": [f"{channel}.{symbol}" for symbol in markets]
+                    "args": [f"{channel}.{symbol.upper()}" for symbol in markets]
                 }
                 payload.append(params)
         elif method == "unsubscribe":
@@ -1467,15 +1460,14 @@ class BybitWebSocketApiManager(threading.Thread):
                                    provide a string to create and use a shared stream_buffer and read it via
                                    `pop_stream_data_from_stream_buffer('string')`.
         :type stream_buffer_name: bool or str
-        :param api_key: provide a valid Binance API key
+        :param api_key: provide a valid Bybit API key
         :type api_key: str
-        :param api_secret: provide a valid Binance API secret
+        :param api_secret: provide a valid Bybit API secret
         :type api_secret: str
         :param output: the default setting `raw_data` can be globally overwritten with the parameter
                        `output_default <https://unicorn-bybit-websocket-api.docs.lucit.tech/unicorn_bybit_websocket_api.html?highlight=output_default#module-unicorn_bybit_websocket_api.unicorn_bybit_websocket_api_manager>`__
                        of BybitWebSocketApiManager`. To overrule the `output_default` value for this specific stream,
-                       set `output` to "dict" to convert the received raw data to a python dict,  set to "UnicornFy" to
-                       convert with `UnicornFy <https://github.com/LUCIT-Systems-and-Development/unicorn-fy>`__ -  otherwise with
+                       set `output` to "dict" to convert the received raw data to a python dict -  otherwise with
                        the default setting "raw_data" the output remains unchanged and gets delivered as received from
                        the endpoints
         :type output: str
@@ -1633,7 +1625,7 @@ class BybitWebSocketApiManager(threading.Thread):
 
     def delete_listen_key_by_stream_id(self, stream_id) -> bool:
         """
-        Delete a binance listen_key from a specific !userData stream
+        Delete a Bybit listen_key from a specific !userData stream
 
         :param stream_id: id of a !userData stream
         :type stream_id: str
@@ -1643,9 +1635,9 @@ class BybitWebSocketApiManager(threading.Thread):
         try:
             if self.stream_list[stream_id]['listen_key'] is not None:
                 logger.info("BybitWebSocketApiManager.delete_listen_key_by_stream_id(" + str(stream_id) + ")")
-                response, binance_api_status = self.restclient.delete_listen_key(stream_id)
-                if binance_api_status is not None:
-                    self.binance_api_status = binance_api_status
+                response, bybit_api_status = self.restclient.delete_listen_key(stream_id)
+                if bybit_api_status is not None:
+                    self.bybit_api_status = bybit_api_status
         except requests.exceptions.ReadTimeout as error_msg:
             logger.debug(f"BybitWebSocketApiManager.delete_listen_key_by_stream_id() - Not able to delete "
                          f"listen_key - requests.exceptions.ReadTimeout: {error_msg}")
@@ -1684,13 +1676,13 @@ class BybitWebSocketApiManager(threading.Thread):
 
     def remove_all_data_of_stream_id(self, stream_id, timeout: float = 10.0) -> bool:
         """
-        Delete all remaining data within the UBWA instance of a stopped stream.
+        Delete all remaining data within the UBBWA instance of a stopped stream.
 
         Even if a stream crashes or get stopped, its data remains in the BybitWebSocketApiManager till you stop the
-        BybitWebSocketApiManager itself. If you want to tidy up the entire UBWA instance you can use this method.
+        BybitWebSocketApiManager itself. If you want to tidy up the entire UBBWA instance you can use this method.
 
         UnicornBybitWebSocketApiManager accepts the parameter `auto_data_cleanup_stopped_streams`. If this is set
-        to `True` (`auto_data_cleanup_stopped_streams=True`), the UBWA instance performs the cleanup with this function
+        to `True` (`auto_data_cleanup_stopped_streams=True`), the UBBWA instance performs the cleanup with this function
         `remove_all_data_of_stream_id()` automatically and regularly.
 
         :param stream_id: id of a stream
@@ -1847,16 +1839,16 @@ class BybitWebSocketApiManager(threading.Thread):
             logger.debug(f"BybitWebSocketApiManager.get_all_receives_last_second() - Leaving `stream_list_lock`!")
         return all_receives_last_second
 
-    def get_binance_api_status(self):
+    def get_bybit_api_status(self):
         """
-        `get_binance_api_status()` is obsolete and will be removed in future releases, please use `get_used_weight()`
+        `get_bybit_api_status()` is obsolete and will be removed in future releases, please use `get_used_weight()`
         instead!
 
         :return: dict
         """
-        logger.warning("`get_binance_api_status()` is obsolete and will be removed in future releases, please use"
+        logger.warning("`get_bybit_api_status()` is obsolete and will be removed in future releases, please use"
                        "`get_used_weight()` instead!")
-        return self.binance_api_status
+        return self.bybit_api_status
 
     def get_debug_log(self):
         """
@@ -1873,7 +1865,7 @@ class BybitWebSocketApiManager(threading.Thread):
     @staticmethod
     def get_timestamp() -> int:
         """
-        Get a Binance conform Timestamp.
+        Get a Bybit conform Timestamp.
 
         :return: int
         """
@@ -1882,7 +1874,7 @@ class BybitWebSocketApiManager(threading.Thread):
     @staticmethod
     def get_timestamp_unix() -> float:
         """
-        Get a Binance conform Timestamp.
+        Get a Bybit conform Timestamp.
 
         :return: float
         """
@@ -1894,7 +1886,7 @@ class BybitWebSocketApiManager(threading.Thread):
 
         :return: dict
         """
-        return self.binance_api_status
+        return self.bybit_api_status
 
     def get_current_receiving_speed(self, stream_id):
         """
@@ -1986,7 +1978,7 @@ class BybitWebSocketApiManager(threading.Thread):
 
     def get_exchange(self):
         """
-        Get the name of the used exchange like "binance.com" or "binance.org-testnet"
+        Get the name of the used exchange like "bybit.com" or "bybit.com-testnet"
 
         :return: str
         """
@@ -2091,7 +2083,7 @@ class BybitWebSocketApiManager(threading.Thread):
             try:
                 return self.last_update_check_github['status']['tag_name']
             except KeyError as error_msg:
-                logger.debug(f"BinanceLocalDepthCacheManager.get_latest_version() - KeyError: {error_msg}")
+                logger.debug(f"BybitLocalDepthCacheManager.get_latest_version() - KeyError: {error_msg}")
                 return None
         else:
             return None
@@ -2117,7 +2109,7 @@ class BybitWebSocketApiManager(threading.Thread):
 
     def get_limit_of_subscriptions_per_stream(self):
         """
-        Get the number of allowed active subscriptions per stream (limit of binance API)
+        Get the number of allowed active subscriptions per stream (limit of Bybit API)
 
         :return: int
         """
@@ -2178,9 +2170,9 @@ class BybitWebSocketApiManager(threading.Thread):
         # no cached listen_key or listen_key is older than 30 min
         # acquire a new listen_key:
         try:
-            response, binance_api_status = self.restclient.get_listen_key(stream_id)
-            if binance_api_status is not None:
-                self.binance_api_status = binance_api_status
+            response, bybit_api_status = self.restclient.get_listen_key(stream_id)
+            if bybit_api_status is not None:
+                self.bybit_api_status = bybit_api_status
         except ResourceWarning as error_msg:
             logger.error(f"BybitWebSocketApiManager.get_listen_key_from_restclient() - ResourceWarning: {error_msg}")
             return False
@@ -2504,7 +2496,7 @@ class BybitWebSocketApiManager(threading.Thread):
 
     def get_stream_subscriptions(self, stream_id, request_id=None):
         """
-        Get a list of subscriptions of a specific stream from Binance endpoints - the result can be received via
+        Get a list of subscriptions of a specific stream from Bybit endpoints - the result can be received via
         the `stream_buffer` and is also added to the results ringbuffer - `get_results_from_endpoints()
         <https://unicorn-bybit-websocket-api.docs.lucit.tech/unicorn_bybit_websocket_api.html#unicorn_bybit_websocket_api.manager.BybitWebSocketApiManager.get_results_from_endpoints>`__
         to get all results or use `get_result_by_request_id(request_id)
@@ -2513,7 +2505,7 @@ class BybitWebSocketApiManager(threading.Thread):
 
         This function is supported by CEX endpoints only!
 
-        Info: https://github.com/binance-exchange/binance-official-api-docs/blob/master/web-socket-streams.md#listing-subscriptions
+        Info: ...
 
         :param stream_id: id of a stream
         :type stream_id: str
@@ -2526,24 +2518,8 @@ class BybitWebSocketApiManager(threading.Thread):
         """
         if request_id is None:
             request_id = self.get_request_id()
-        if self.is_exchange_type('dex'):
-            logger.error("BybitWebSocketApiManager.get_stream_subscriptions(" + str(stream_id) + ", " +
-                         str(request_id) + ") DEX websockets dont support the listing of subscriptions! Request not "
-                         "sent!")
-            return None
-        elif self.is_exchange_type('cex'):
-            payload = {"method": "LIST_SUBSCRIPTIONS",
-                       "id": request_id}
-            try:
-                with self.stream_list_lock:
-                    logger.debug(f"BybitWebSocketApiManager.get_stream_subscriptions() - `stream_list_lock` was "
-                                 f"entered!")
-                    self.stream_list[stream_id]['payload'].append(payload)
-                    logger.debug(f"BybitWebSocketApiManager.get_stream_subscriptions() - Leaving `stream_list_lock`!")
-            except KeyError:
-                return None
-            logger.info("BybitWebSocketApiManager.get_stream_subscriptions(" + str(stream_id) + ", " +
-                        str(request_id) + ") payload added!")
+        # Todo:
+        if True:
             return request_id
         else:
             return None
@@ -2815,21 +2791,6 @@ class BybitWebSocketApiManager(threading.Thread):
         else:
             return True
 
-    def is_exchange_type(self, exchange_type: str = None):
-        """
-        Check the exchange type!
-
-        :param exchange_type: Valid types are `dex` and `cex`!
-        :type exchange_type: str
-        :return: bool
-        """
-        if exchange_type is not None and self.exchange_type == exchange_type:
-            logger.debug(f"BybitWebSocketApiManager.is_exchange_type({self.exchange_type}=={exchange_type} = True)")
-            return True
-        else:
-            logger.debug(f"BybitWebSocketApiManager.is_exchange_type({self.exchange_type}=={exchange_type} = False)")
-            return False
-
     def is_crash_request(self, stream_id) -> bool:
         """
         Has a specific stream a crash_request?
@@ -2975,12 +2936,11 @@ class BybitWebSocketApiManager(threading.Thread):
         :param title: set to `True` to use curses instead of print()
         :type title: str
         """
-        binance_api_status_row = ""
+        bybit_api_status_row = ""
         stream_label_row = ""
         status_row = ""
         payload_row = ""
         symbol_row = ""
-        dex_user_address_row = ""
         last_static_ping_listen_key = ""
         stream_info = self.get_stream_info(stream_id)
         if add_string is None:
@@ -3033,23 +2993,21 @@ class BybitWebSocketApiManager(threading.Thread):
         if "!userData" in self.stream_list[stream_id]['markets'] or "!userData" in self.stream_list[stream_id]['channels']:
             last_static_ping_listen_key = " last_static_ping_listen_key: " + \
                                           str(self.stream_list[stream_id]['last_static_ping_listen_key']) + "\r\n"
-            if self.binance_api_status['status_code'] == 200:
-                binance_api_status_code = "\033[1m\033[32m" + str(self.binance_api_status['status_code']) + \
+            if self.bybit_api_status['status_code'] == 200:
+                bybit_api_status_code = "\033[1m\033[32m" + str(self.bybit_api_status['status_code']) + \
                                           "\033[0m"
             else:
-                binance_api_status_code = "\033[1m\033[31m" + str(self.binance_api_status['status_code']) + \
+                bybit_api_status_code = "\033[1m\033[31m" + str(self.bybit_api_status['status_code']) + \
                                           "\033[0m"
-            binance_api_status_row = " binance_api_status: weight=" + str(self.binance_api_status['weight']) + \
-                                     ", status_code=" + str(binance_api_status_code) + f" (last update " + \
-                                     str(self.get_date_of_timestamp(self.binance_api_status['timestamp'])) + \
+            bybit_api_status_row = " bybit_api_status: weight=" + str(self.bybit_api_status['weight']) + \
+                                     ", status_code=" + str(bybit_api_status_code) + f" (last update " + \
+                                     str(self.get_date_of_timestamp(self.bybit_api_status['timestamp'])) + \
                                      ")\r\n"
         current_receiving_speed = str(self.get_human_bytesize(self.get_current_receiving_speed(stream_id), "/s"))
         if self.stream_list[stream_id]['symbols'] is not None:
             symbol_row = " symbols:" + str(stream_info['symbols']) + "\r\n"
         if self.stream_list[stream_id]["payload"]:
             payload_row = " payload: " + str(self.stream_list[stream_id]["payload"]) + "\r\n"
-        if self.stream_list[stream_id]["dex_user_address"] is not None:
-            dex_user_address_row = " user_address: " + str(self.stream_list[stream_id]["dex_user_address"]) + "\r\n"
         if self.stream_list[stream_id]["stream_label"] is not None:
             stream_label_row = " stream_label: " + self.stream_list[stream_id]["stream_label"] + "\r\n"
         if isinstance(stream_info['ping_interval'], int):
@@ -3089,7 +3047,6 @@ class BybitWebSocketApiManager(threading.Thread):
                   " subscriptions: " + str(self.stream_list[stream_id]['subscriptions']) + "\r\n" +
                   str(payload_row) +
                   str(status_row) +
-                  str(dex_user_address_row) +
                   f" ping_interval: {ping_interval}\r\n"
                   f" ping_timeout: {ping_timeout}\r\n"
                   f" close_timeout: {close_timeout}\r\n"
@@ -3097,7 +3054,7 @@ class BybitWebSocketApiManager(threading.Thread):
                   " uptime:", str(uptime),
                   f"since {datetime.fromtimestamp(stream_info['start_time'], timezone.utc).strftime('%Y-%m-%d, %H:%M:%S UTC')}\r\n" +
                   " reconnects:", str(stream_info['reconnects']), logged_reconnects_row, "\r\n" +
-                  str(binance_api_status_row) +
+                  str(bybit_api_status_row) +
                   str(last_static_ping_listen_key) +
                   " last_heartbeat:", str(stream_info['last_heartbeat']), "\r\n"
                   " seconds_to_last_heartbeat:", str(stream_info['seconds_to_last_heartbeat']), "\r\n"
@@ -3148,7 +3105,7 @@ class BybitWebSocketApiManager(threading.Thread):
         streams_with_stop_request = 0
         stream_rows = ""
         crashed_streams_row = ""
-        binance_api_status_row = ""
+        bybit_api_status_row = ""
         received_bytes_per_x_row = ""
         streams_with_stop_request_row = ""
         stream_buffer_row = ""
@@ -3260,17 +3217,17 @@ class BybitWebSocketApiManager(threading.Thread):
                 restarting_streams_row = " \033[1m\033[33mrestarting_streams: " + str(restarting_streams) + "\033[0m\r\n"
             if stopped_streams > 0:
                 stopped_streams_row = " \033[1m\033[33mstopped_streams: " + str(stopped_streams) + "\033[0m\r\n"
-            if self.binance_api_status['weight'] is not None:
-                if self.binance_api_status['status_code'] == 200:
-                    binance_api_status_code = "\033[1m\033[32m" + str(self.binance_api_status['status_code']) + \
+            if self.bybit_api_status['weight'] is not None:
+                if self.bybit_api_status['status_code'] == 200:
+                    bybit_api_status_code = "\033[1m\033[32m" + str(self.bybit_api_status['status_code']) + \
                                               "\033[0m"
                 else:
-                    binance_api_status_code = "\033[1m\033[31m" + str(self.binance_api_status['status_code']) + \
+                    bybit_api_status_code = "\033[1m\033[31m" + str(self.bybit_api_status['status_code']) + \
                                               "\033[0m"
-                binance_api_status_row = " binance_api_status: weight=" + \
-                                         str(self.binance_api_status['weight']) + \
-                                         ", status_code=" + str(binance_api_status_code) + " (last update " + \
-                                         str(self.get_date_of_timestamp(self.binance_api_status['timestamp'])) + ")\r\n"
+                bybit_api_status_row = " bybit_api_status: weight=" + \
+                                         str(self.bybit_api_status['weight']) + \
+                                         ", status_code=" + str(bybit_api_status_code) + " (last update " + \
+                                         str(self.get_date_of_timestamp(self.bybit_api_status['timestamp'])) + ")\r\n"
 
             if title is not None:
                 first_row = str(self.fill_up_space_centered(96, f" {title} ", "=")) + "\r\n"
@@ -3303,7 +3260,7 @@ class BybitWebSocketApiManager(threading.Thread):
                     " total_received_bytes: " + str(total_received_bytes) + "\r\n"
                     " total_transmitted_payloads: " + str(self.total_transmitted) + "\r\n" +
                     " stream_buffer_maxlen: " + str(self.stream_buffer_maxlen) + "\r\n" +
-                    str(binance_api_status_row) +
+                    str(bybit_api_status_row) +
                     " process_ressource_usage: cpu=" + str(self.get_process_usage_cpu()) + "%, memory=" +
                     str(self.get_process_usage_memory()) + ", threads=" + str(self.get_process_usage_threads()) +
                     "\r\n" + str(add_string) +
@@ -3426,15 +3383,14 @@ class BybitWebSocketApiManager(threading.Thread):
                                    provide a string to create and use a shared stream_buffer and read it via
                                    `pop_stream_data_from_stream_buffer('string')`.
         :type new_stream_buffer_name: False or str
-        :param new_api_key: provide a valid Binance API key
+        :param new_api_key: provide a valid Bybit API key
         :type new_api_key: str
-        :param new_api_secret: provide a valid Binance API secret
+        :param new_api_secret: provide a valid Bybit API secret
         :type new_api_secret: str
         :param new_symbols: provide the symbols for isolated_margin user_data streams
         :type new_symbols: str
         :return: new stream_id
-        :param new_output: set to "dict" to convert the received raw data to a python dict, set to "UnicornFy" to convert
-                           with `UnicornFy <https://github.com/LUCIT-Systems-and-Development/unicorn-fy>`__ - otherwise
+        :param new_output: set to "dict" to convert the received raw data to a python dict - otherwise
                            the output remains unchanged and gets delivered as received from the endpoints
         :type new_output: str
         :param new_ping_interval: Once the connection is open, a `Ping frame` is sent every
@@ -3519,19 +3475,6 @@ class BybitWebSocketApiManager(threading.Thread):
                         logger.debug(f"BybitWebSocketApiManager.run() finally - error_msg: {error_msg}")
                 if not loop.is_closed():
                     loop.close()
-
-    def set_private_dex_config(self, binance_dex_user_address):
-        """
-        Set binance_dex_user_address
-
-        Is going to be the default user_address, once the websocket is created with this default value, it's not possible
-        to change it. If you plan to use different user_address It's recommended to not use this method! Just provide the
-        user_address with create_stream() in the market parameter.
-
-        :param binance_dex_user_address: Binance DEX user address
-        :type binance_dex_user_address: str
-        """
-        self.dex_user_address = binance_dex_user_address
 
     def set_heartbeat(self, stream_id) -> None:
         """
@@ -3663,57 +3606,28 @@ class BybitWebSocketApiManager(threading.Thread):
         :param max_items_per_request: max size for params, if more it gets split
         :return: list or False
         """
-        if self.is_exchange_type('cex'):
-            count_items = 0
-            add_params = []
-            payload = []
-            for param in params:
-                add_params.append(param)
-                count_items += 1
-                if count_items > max_items_per_request:
-                    add_payload = {"method": method,
-                                   "params": add_params,
-                                   "id": self.get_request_id()}
-                    payload.append(add_payload)
-                    count_items = 0
-                    add_params = []
-            if len(add_params) > 0:
+        count_items = 0
+        add_params = []
+        payload = []
+        for param in params:
+            add_params.append(param)
+            count_items += 1
+            if count_items > max_items_per_request:
                 add_payload = {"method": method,
                                "params": add_params,
                                "id": self.get_request_id()}
                 payload.append(add_payload)
-                return payload
-            else:
-                logger.error(f"BybitWebSocketApiManager.split_payload() CEX result is None!")
-                return None
-        elif self.is_exchange_type('dex'):
-            logger.error(f"BybitWebSocketApiManager.split_payload() DEX result is None! (Dev: Todo!)")
-            # Todo:
-            #  return None
+                count_items = 0
+                add_params = []
+        if len(add_params) > 0:
+            add_payload = {"method": method,
+                           "params": add_params,
+                           "id": self.get_request_id()}
+            payload.append(add_payload)
+            return payload
         else:
             logger.error(f"BybitWebSocketApiManager.split_payload() result is None!")
             return None
-
-    def start_monitoring_api(self, host='127.0.0.1', port=64201, warn_on_update=True):
-        """
-        Start the monitoring API server
-
-        Take a look into the
-        `Wiki <https://github.com/LUCIT-Systems-and-Development/unicorn-bybit-websocket-api/wiki/UNICORN-Monitoring-API-Service>`__
-        to see how this works!
-
-        :param host: listening ip address, use 0.0.0.0 or a specific address (default: 127.0.0.1)
-        :type host: str
-        :param port: listening port number (default: 64201)
-        :type port: int
-        :param warn_on_update: set to `False` to disable the update warning
-        :type warn_on_update: bool
-        """
-        thread = threading.Thread(target=self._start_monitoring_api_thread,
-                                  args=(host, port, warn_on_update),
-                                  name="monitoring_api")
-        thread.start()
-        return True
 
     def stop_manager(self, close_api_session: bool = True):
         """
@@ -3795,15 +3709,14 @@ class BybitWebSocketApiManager(threading.Thread):
         except KeyError:
             return False
         if delete_listen_key:
-            if self.exchange_type != "dex":
-                try:
-                    self.delete_listen_key_by_stream_id(stream_id)
-                except requests.exceptions.ReadTimeout as error_msg:
-                    logger.debug(f"BybitWebSocketApiManager.stop_stream() - Not able to delete listen_key - "
-                                 f"requests.exceptions.ReadTimeout: {error_msg}")
-                except requests.exceptions.ConnectionError as error_msg:
-                    logger.debug(f"BybitWebSocketApiManager.stop_stream() - Not able to delete listen_key - "
-                                 f"requests.exceptions.ConnectionError: {error_msg}")
+            try:
+                self.delete_listen_key_by_stream_id(stream_id)
+            except requests.exceptions.ReadTimeout as error_msg:
+                logger.debug(f"BybitWebSocketApiManager.stop_stream() - Not able to delete listen_key - "
+                             f"requests.exceptions.ReadTimeout: {error_msg}")
+            except requests.exceptions.ConnectionError as error_msg:
+                logger.debug(f"BybitWebSocketApiManager.stop_stream() - Not able to delete listen_key - "
+                             f"requests.exceptions.ConnectionError: {error_msg}")
         return True
 
     def _crash_stream(self, stream_id, error_msg=None):
