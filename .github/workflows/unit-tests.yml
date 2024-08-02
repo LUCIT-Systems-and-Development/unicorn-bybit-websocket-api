@@ -139,10 +139,8 @@ jobs:
           LUCIT_LICENSE_TOKEN: ${{ secrets.LUCIT_LICENSE_TOKEN }}
       run: coverage run --source unicorn_bybit_websocket_api unittest_bybit_websocket_api.py
 
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v3
+    - name: Upload coverage reports to Codecov
+      uses: codecov/codecov-action@v4.0.1
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
-        flags: unittests
-        name: codecov-umbrella
-        verbose: true
+        slug: LUCIT-Systems-and-Development/unicorn-bybit-websocket-api
