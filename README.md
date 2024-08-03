@@ -1,7 +1,7 @@
 # ***BETA, NOT FOR PRODUCTIVE USE!!!***
 The core functions work. Websocket connections to public endpoints can be established and are stable. (No long-term tests!)
 
-If you would like to take part in the test, please contact us in the chat!
+If you would like to take part in the test, please contact us in the [chat](https://www.lucit.tech/get-support.html)!
 
 [![Get a UNICORN Trading Suite License](https://raw.githubusercontent.com/LUCIT-Systems-and-Development/unicorn-binance-suite/master/images/logo/LUCIT-UTS-License-Offer.png)](https://shop.lucit.services/software/unicorn-trading-suite)
 
@@ -132,17 +132,8 @@ with BybitWebSocketApiManager(exchange='bybit.com') as bybit_wsm:
 Basically that's it, but there are more options.
 
 ## [Subscribe](https://unicorn-bybit-websocket-api.docs.lucit.tech/unicorn_bybit_websocket_api.html#unicorn_bybit_websocket_api.manager.BybitWebSocketApiManager.subscribe_to_stream) / [unsubscribe](https://unicorn-bybit-websocket-api.docs.lucit.tech/unicorn_bybit_websocket_api.html#unicorn_bybit_websocket_api.manager.BybitWebSocketApiManager.unsubscribe_from_stream) new markets and channels
-# Todo!!!
-```
-markets = ['engbtc', 'zileth']
-channels = ['kline_5m', 'kline_15m', 'kline_30m', 'kline_1h', 'kline_12h', 'depth5']
 
-bybit_wsm.subscribe_to_stream(stream_id=stream_id, channels=channels, markets=markets)
-
-bybit_wsm.unsubscribe_from_stream(stream_id=stream_id, markets=markets)
-
-bybit_wsm.unsubscribe_from_stream(stream_id=stream_id, channels=channels)
-```
+These functions are not ready! (Todo!)
 
 ## Stop `bybit_wsm` after usage to avoid memory leaks
 

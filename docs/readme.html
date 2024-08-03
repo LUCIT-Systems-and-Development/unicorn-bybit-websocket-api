@@ -78,12 +78,8 @@
 </ul>
 </li>
 <li><a class="reference internal" href="#subscribe-unsubscribe-new-markets-and-channels">Subscribe / unsubscribe new markets and channels</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#todo">Todo!!!</a><ul>
 <li><a class="reference internal" href="#stop-bybit-wsm-after-usage-to-avoid-memory-leaks">Stop <code class="docutils literal notranslate"><span class="pre">bybit_wsm</span></code> after usage to avoid memory leaks</a></li>
 <li><a class="reference internal" href="#stream-signals-know-the-state-of-your-streams"><code class="docutils literal notranslate"><span class="pre">stream_signals</span></code> - know the state of your streams</a></li>
-<li><a class="reference internal" href="#more">More?</a></li>
 <li><a class="reference internal" href="#description">Description</a><ul>
 <li><a class="reference internal" href="#what-are-the-benefits-of-the-unicorn-bybit-websocket-api">What are the benefits of the UNICORN Bybit WebSocket API?</a></li>
 </ul>
@@ -241,7 +237,7 @@
   <section id="beta-not-for-productive-use">
 <h1><em><strong>BETA, NOT FOR PRODUCTIVE USE!!!</strong></em><a class="headerlink" href="#beta-not-for-productive-use" title="Link to this heading">¶</a></h1>
 <p>The core functions work. Websocket connections to public endpoints can be established and are stable. (No long-term tests!)</p>
-<p>If you would like to take part in the test, please contact us in the chat!</p>
+<p>If you would like to take part in the test, please contact us in the <a class="reference external" href="https://www.lucit.tech/get-support.html">chat</a>!</p>
 <p><a class="reference external" href="https://shop.lucit.services/software/unicorn-trading-suite"><img alt="Get a UNICORN Trading Suite License" src="https://raw.githubusercontent.com/LUCIT-Systems-and-Development/unicorn-binance-suite/master/images/logo/LUCIT-UTS-License-Offer.png" /></a></p>
 <p><a class="reference external" href="https://github.com/LUCIT-Systems-and-Development/unicorn-bybit-websocket-api/releases"><img alt="GitHub Release" src="https://img.shields.io/github/release/LUCIT-Systems-and-Development/unicorn-bybit-websocket-api.svg?label=github" /></a>
 <a class="reference external" href="https://github.com/LUCIT-Systems-and-Development/unicorn-bybit-websocket-api/releases"><img alt="GitHub Downloads" src="https://img.shields.io/github/downloads/LUCIT-Systems-and-Development/unicorn-bybit-websocket-api/total?color=blue" /></a>
@@ -365,20 +361,8 @@ generally recommended method for processing data from streams.</p>
 </section>
 <section id="subscribe-unsubscribe-new-markets-and-channels">
 <h2><a class="reference external" href="https://unicorn-bybit-websocket-api.docs.lucit.tech/unicorn_bybit_websocket_api.html#unicorn_bybit_websocket_api.manager.BybitWebSocketApiManager.subscribe_to_stream">Subscribe</a> / <a class="reference external" href="https://unicorn-bybit-websocket-api.docs.lucit.tech/unicorn_bybit_websocket_api.html#unicorn_bybit_websocket_api.manager.BybitWebSocketApiManager.unsubscribe_from_stream">unsubscribe</a> new markets and channels<a class="headerlink" href="#subscribe-unsubscribe-new-markets-and-channels" title="Link to this heading">¶</a></h2>
+<p>These functions are not ready! (Todo!)</p>
 </section>
-</section>
-<section id="todo">
-<h1>Todo!!!<a class="headerlink" href="#todo" title="Link to this heading">¶</a></h1>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">markets</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;engbtc&#39;</span><span class="p">,</span> <span class="s1">&#39;zileth&#39;</span><span class="p">]</span>
-<span class="n">channels</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;kline_5m&#39;</span><span class="p">,</span> <span class="s1">&#39;kline_15m&#39;</span><span class="p">,</span> <span class="s1">&#39;kline_30m&#39;</span><span class="p">,</span> <span class="s1">&#39;kline_1h&#39;</span><span class="p">,</span> <span class="s1">&#39;kline_12h&#39;</span><span class="p">,</span> <span class="s1">&#39;depth5&#39;</span><span class="p">]</span>
-
-<span class="n">bybit_wsm</span><span class="o">.</span><span class="n">subscribe_to_stream</span><span class="p">(</span><span class="n">stream_id</span><span class="o">=</span><span class="n">stream_id</span><span class="p">,</span> <span class="n">channels</span><span class="o">=</span><span class="n">channels</span><span class="p">,</span> <span class="n">markets</span><span class="o">=</span><span class="n">markets</span><span class="p">)</span>
-
-<span class="n">bybit_wsm</span><span class="o">.</span><span class="n">unsubscribe_from_stream</span><span class="p">(</span><span class="n">stream_id</span><span class="o">=</span><span class="n">stream_id</span><span class="p">,</span> <span class="n">markets</span><span class="o">=</span><span class="n">markets</span><span class="p">)</span>
-
-<span class="n">bybit_wsm</span><span class="o">.</span><span class="n">unsubscribe_from_stream</span><span class="p">(</span><span class="n">stream_id</span><span class="o">=</span><span class="n">stream_id</span><span class="p">,</span> <span class="n">channels</span><span class="o">=</span><span class="n">channels</span><span class="p">)</span>
-</pre></div>
-</div>
 <section id="stop-bybit-wsm-after-usage-to-avoid-memory-leaks">
 <h2>Stop <code class="docutils literal notranslate"><span class="pre">bybit_wsm</span></code> after usage to avoid memory leaks<a class="headerlink" href="#stop-bybit-wsm-after-usage-to-avoid-memory-leaks" title="Link to this heading">¶</a></h2>
 <p>When you instantiate UNICORN Bybit Websocket API with <code class="docutils literal notranslate"><span class="pre">with</span></code>, <code class="docutils literal notranslate"><span class="pre">bybit_wsm.stop_manager()</span></code> is automatically executed upon exiting the <code class="docutils literal notranslate"><span class="pre">with</span></code>-block.</p>
@@ -414,17 +398,6 @@ it was disconnected and stopped, and when the stream cannot be restored.</p>
     <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
 </pre></div>
 </div>
-</section>
-<section id="more">
-<h2>More?<a class="headerlink" href="#more" title="Link to this heading">¶</a></h2>
-<p><a class="reference external" href="https://unicorn-bybit-websocket-api.docs.lucit.tech/unicorn_bybit_websocket_api.html">Discover even more possibilities</a>,
-<a class="reference external" href="https://github.com/LUCIT-Systems-and-Development/unicorn-bybit-websocket-api/blob/master/examples/_archive/example_stream_everything.py">use this script</a>
-to stream everything from “bybit.com” or try our <a class="reference internal" href="#examples">examples</a>!</p>
-<p>This should be known by everyone using this lib:</p>
-<ul class="simple">
-<li><p><a class="reference external" href="https://github.com/LUCIT-Systems-and-Development/unicorn-bybit-websocket-api/wiki/Best-practice-solutions-for-a-maximum-stable-connection!">Best practice solutions for a maximum stable connection</a></p></li>
-<li><p><a class="reference external" href="https://github.com/LUCIT-Systems-and-Development/unicorn-bybit-websocket-api/discussions/254">Do you want consistent data from bybit?</a></p></li>
-</ul>
 </section>
 <section id="description">
 <h2>Description<a class="headerlink" href="#description" title="Link to this heading">¶</a></h2>
@@ -563,7 +536,7 @@ GitHub, PYPI and Anaconda. This is a transparent method that makes it possible t
 compilation.</p>
 </section>
 <section id="a-cython-binary-pypy-or-source-code-based-cpython-wheel-of-the-latest-version-with-pip-from-pypi">
-<h3>A Cython binary, PyPy or source code based CPython wheel of the latest version with <code class="docutils literal notranslate"><span class="pre">pip</span></code> from <a class="reference external" href="https://pypi.org/project/unicorn-bybit-rest-api/">PyPI</a><a class="headerlink" href="#a-cython-binary-pypy-or-source-code-based-cpython-wheel-of-the-latest-version-with-pip-from-pypi" title="Link to this heading">¶</a></h3>
+<h3>A Cython binary, PyPy or source code based CPython wheel of the latest version with <code class="docutils literal notranslate"><span class="pre">pip</span></code> from <a class="reference external" href="https://pypi.org/project/unicorn-bybit-websocket-api/">PyPI</a><a class="headerlink" href="#a-cython-binary-pypy-or-source-code-based-cpython-wheel-of-the-latest-version-with-pip-from-pypi" title="Link to this heading">¶</a></h3>
 <p>Our <a class="reference external" href="https://cython.org/">Cython</a> and <a class="reference external" href="https://www.pypy.org/">PyPy</a> Wheels are available on <a class="reference external" href="https://pypi.org/">PyPI</a>,
 these wheels offer significant advantages for Python developers:</p>
 <ul class="simple">
@@ -767,12 +740,8 @@ of any kind, including but not limited to direct or indirect damages for loss of
 </ul>
 </li>
 <li><a class="reference internal" href="#subscribe-unsubscribe-new-markets-and-channels">Subscribe / unsubscribe new markets and channels</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#todo">Todo!!!</a><ul>
 <li><a class="reference internal" href="#stop-bybit-wsm-after-usage-to-avoid-memory-leaks">Stop <code class="docutils literal notranslate"><span class="pre">bybit_wsm</span></code> after usage to avoid memory leaks</a></li>
 <li><a class="reference internal" href="#stream-signals-know-the-state-of-your-streams"><code class="docutils literal notranslate"><span class="pre">stream_signals</span></code> - know the state of your streams</a></li>
-<li><a class="reference internal" href="#more">More?</a></li>
 <li><a class="reference internal" href="#description">Description</a><ul>
 <li><a class="reference internal" href="#what-are-the-benefits-of-the-unicorn-bybit-websocket-api">What are the benefits of the UNICORN Bybit WebSocket API?</a></li>
 </ul>
@@ -925,7 +894,7 @@ of any kind, including but not limited to direct or indirect damages for loss of
     <a href="https://docs.lucit.tech">Index of all LUCIT Software Documentation</a><br />
     &copy; <a href="/license.html">Copyright</a> 2023-2023, LUCIT Systems and Development. All Rights Reserved..
     See <a href="/license.html">License</a> for more information.<br />
-    Last updated on Aug 02 2024 at 22:11 (CET).
+    Last updated on Aug 03 2024 at 19:36 (CET).
     <a href="https://github.com/LUCIT-Systems-and-Development/unicorn-bybit-websocket-api/issues/new/choose">Found a bug</a>?
     <br />
     Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.4.7.

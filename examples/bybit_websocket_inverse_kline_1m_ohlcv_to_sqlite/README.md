@@ -1,8 +1,8 @@
-# Downloading and Storing Bybit OHLCV Data Asynchronously To SQLite
+# Downloading and Storing Bybit Inverse OHLCV Data Asynchronously To SQLite
 ## Overview
 This guide outlines how to use our Python library to asynchronously download Open, High, Low, Close, Volume (OHLCV) 
-data from Bybit for selected markets and store this data in a SQLite database `ohlcv.db`. Our solution leverages 
-WebSocket and REST API connections for real-time data streaming and efficient data management.
+data from Bybit for selected markets and store this data in a SQLite database `bybit_inverse_ohlcv_1m.db`. Our solution 
+leverages WebSocket and REST API connections for real-time data streaming and efficient data management.
 
 To open the generated DB file you can use the [DB Browser for SQLite](https://sqlitebrowser.org).
 
@@ -22,18 +22,19 @@ The script initializes a WebSocket connection to Bybit using unicorn_bybit_webso
 SQLite database using aiosqlite.
 
 ### Fetching Market Data:
-It fetches available market symbols ending with `USDT` via Bybit's REST API and subscribes to kline (OHLCV) data 
-streams for these markets.
+It fetches available market symbols starting with `BTC` and `symbol['quote_currency'] == 'USD'` via Bybit's REST API 
+and subscribes to kline.1 (OHLCV) data streams for these markets.
 
 ### Database Operations:
-The script listens for incoming OHLCV data from the subscribed streams, validates the data, and stores it in a SQLite 
-database in an asynchronous manner. The database operations include creating a connection, defining a table for OHLCV 
-data, inserting new data records, and counting the number of records.
+The script listens for incoming OHLCV data from the subscribed streams, validates the data (only closed candles 
+`confirm=True` are stored in the database), and stores it in a SQLite database in an asynchronous manner. The database 
+operations include creating a connection, defining a table for OHLCV data, inserting new data records, and counting the 
+number of records.
 
 ### Running the Script:
 To start the data download and storage process, simply run the script:
 ```bash
-python bybit_websocket_kline_1m_ohlcv_to_sqlite.py
+python bybit_websocket_spot_kline_1m_ohlcv_to_sqlite.py
 ```
 
 ### Graceful Shutdown:

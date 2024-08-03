@@ -7,9 +7,10 @@ import aiosqlite
 import asyncio
 import logging
 import os
+import re
 
 exchange = "bybit.com"
-sqlite_db_file = 'ohlcv.db'
+sqlite_db_file = '../../bybit_spot_ohlcv_1m.db'
 
 logging.getLogger("unicorn_bybit_websocket_api")
 logging.basicConfig(level=logging.DEBUG,
@@ -23,20 +24,16 @@ class BybitDataProcessor:
         self.db = None
         self.ubbwa = BybitWebSocketApiManager(exchange=exchange,
                                               enable_stream_signal_buffer=True,
-                                              process_stream_signals=self.receive_stream_signal)
+                                              process_stream_signals=self.receive_stream_signal,
+                                              output_default="dict")
 
     async def main(self):
         self.db = AsyncDatabase(sqlite_db_file)
         await self.db.create_connection()
         await self.db.create_table()
-        markets = []
-        rest_data = self.ubbwa.restclient.get_symbols()
-        for symbol in rest_data['result']:
-            if symbol['quote_currency'] == 'USDT' and symbol['status'] == 'Trading':
-                markets.append(symbol['name'])
-
+        markets = ['ethbtc', 'btcusdt', 'ethusdt', 'xrpbtc', 'solbtc']
         self.ubbwa.create_stream(channels="kline.1",
-                                 endpoint="public/linear",
+                                 endpoint="public/spot",
                                  markets=markets,
                                  process_asyncio_queue=self.process_ohlcv_datasets,
                                  stream_label="OHLCV")
@@ -49,9 +46,13 @@ class BybitDataProcessor:
         print(f"Saving the data from webstream {self.ubbwa.get_stream_label(stream_id=stream_id)} to the database ...")
         while self.ubbwa.is_stop_request(stream_id=stream_id) is False:
             kline = await self.ubbwa.get_stream_data_from_asyncio_queue(stream_id)
-            if kline.get('event_type') == "kline":
-                if kline['kline']['is_closed'] is True or kline['event_time'] >= kline['kline']['kline_close_time']:
-                    await self.db.insert_ohlcv_data(kline)
+            ohlcv = {}
+            try:
+                ohlcv = kline['data'][0]
+            except KeyError:
+                pass
+            if ohlcv.get('confirm') is True:
+                await self.db.insert_ohlcv_data(kline)
             self.ubbwa.asyncio_queue_task_done(stream_id)
 
     def receive_stream_signal(self, signal_type=None, stream_id=None, data_record=None, error_msg=None):
@@ -81,6 +82,7 @@ class AsyncDatabase:
             await self.conn.execute("""
                 CREATE TABLE IF NOT EXISTS ohlcv (
                     date TEXT NOT NULL,
+                    channel TEXT NOT NULL,
                     symbol TEXT NOT NULL,
                     open REAL NOT NULL,
                     high REAL NOT NULL,
@@ -94,21 +96,40 @@ class AsyncDatabase:
             print(f"Not able to create SQLite table: {error_msg}")
 
     async def insert_ohlcv_data(self, data):
+        try:
+            ohlcv = data['data'].pop()
+            channel, symbol = self.split_string(data['topic'])
+        except KeyError as error_msg:
+            print(f"ERROR: {error_msg} - Can not save to OHLCV DB: {data}")
+            return None
+
         sql = '''
-        INSERT INTO ohlcv(date, symbol, open, high, low, close, volume)
-        VALUES(?,?,?,?,?,?,?)
+        INSERT INTO ohlcv(date, channel, symbol, open, high, low, close, volume)
+        VALUES(?,?,?,?,?,?,?,?)
         '''
-        ohlcv_data = (data['kline']['kline_start_time'],
-                      data['kline']['symbol'],
-                      float(data['kline']['open_price']),
-                      float(data['kline']['high_price']),
-                      float(data['kline']['low_price']),
-                      float(data['kline']['close_price']),
-                      float(data['kline']['base_volume']))
+        ohlcv_data = (ohlcv['start'],
+                      channel,
+                      symbol,
+                      float(ohlcv['open']),
+                      float(ohlcv['high']),
+                      float(ohlcv['low']),
+                      float(ohlcv['close']),
+                      float(ohlcv['volume']))
         async with self.conn.cursor() as cur:
             await cur.execute(sql, ohlcv_data)
         await self.conn.commit()
         return cur.lastrowid
+
+    @staticmethod
+    def split_string(input_string):
+        pattern = r'^(.*\..*)\.([^.]*)$'
+        match = re.match(pattern, input_string)
+        if match:
+            value_1 = match.group(1)
+            value_2 = match.group(2)
+            return value_1, value_2
+        else:
+            return None, None
 
 
 if __name__ == "__main__":
