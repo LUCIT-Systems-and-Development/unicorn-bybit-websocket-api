@@ -1,4 +1,7 @@
 # ***BETA, NOT FOR PRODUCTIVE USE!!!***
+The core functions work. Websocket connections to public endpoints can be established and are stable. (No long-term tests!)
+
+If you would like to take part in the test, please contact us in the chat!
 
 [![Get a UNICORN Trading Suite License](https://raw.githubusercontent.com/LUCIT-Systems-and-Development/unicorn-binance-suite/master/images/logo/LUCIT-UTS-License-Offer.png)](https://shop.lucit.services/software/unicorn-trading-suite)
 
@@ -181,17 +184,6 @@ with BybitWebSocketApiManager(process_stream_signals=process_stream_signals) as 
     time.sleep(5)
 ```
 
-## More?
-
-[Discover even more possibilities](https://unicorn-bybit-websocket-api.docs.lucit.tech/unicorn_bybit_websocket_api.html), 
-[use this script](https://github.com/LUCIT-Systems-and-Development/unicorn-bybit-websocket-api/blob/master/examples/_archive/example_stream_everything.py) 
-to stream everything from "bybit.com" or try our [examples](#examples)!
-
-This should be known by everyone using this lib: 
-
-- [Best practice solutions for a maximum stable connection](https://github.com/LUCIT-Systems-and-Development/unicorn-bybit-websocket-api/wiki/Best-practice-solutions-for-a-maximum-stable-connection!)
-- [Do you want consistent data from bybit?](https://github.com/LUCIT-Systems-and-Development/unicorn-bybit-websocket-api/discussions/254)
-
 ## Description
 The Python package [UNICORN Bybit WebSocket API](https://www.lucit.tech/unicorn-bybit-websocket-api.html) 
 provides an API to the [Bybit Websocket API`s](https://bybit-exchange.github.io/docs) of [Bybit](https://www.bybit.com)
@@ -327,7 +319,7 @@ create the respective compilations and stub files, pack them into wheels and con
 GitHub, PYPI and Anaconda. This is a transparent method that makes it possible to trace the source code behind a 
 compilation.
 
-### A Cython binary, PyPy or source code based CPython wheel of the latest version with `pip` from [PyPI](https://pypi.org/project/unicorn-bybit-rest-api/)
+### A Cython binary, PyPy or source code based CPython wheel of the latest version with `pip` from [PyPI](https://pypi.org/project/unicorn-bybit-websocket-api/)
 Our [Cython](https://cython.org/) and [PyPy](https://www.pypy.org/) Wheels are available on [PyPI](https://pypi.org/), 
 these wheels offer significant advantages for Python developers:
 

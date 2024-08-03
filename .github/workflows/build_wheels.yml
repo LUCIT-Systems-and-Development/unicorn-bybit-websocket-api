@@ -35,7 +35,7 @@ jobs:
           CIBW_BEFORE_ALL: "bash dev/tools/github/install_rust.sh"
 
       - name: Build wheels Mac
-        if: matrix.os == 'macos-11'
+        if: matrix.os == 'macos-12'
         uses: pypa/cibuildwheel@v2.16.5
 
       - name: Build wheels Windows
