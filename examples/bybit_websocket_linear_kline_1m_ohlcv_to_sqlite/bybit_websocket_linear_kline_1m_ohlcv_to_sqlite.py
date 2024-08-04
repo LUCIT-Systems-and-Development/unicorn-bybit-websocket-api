@@ -36,6 +36,7 @@ class BybitDataProcessor:
         for symbol in rest_data['result']:
             if symbol['quote_currency'] == 'USDT' and symbol['status'] == 'Trading':
                 markets.append(symbol['name'])
+        print(f"Subscribing to {len(markets)} markets!")
         self.ubbwa.create_stream(channels="kline.1",
                                  endpoint="public/linear",
                                  markets=markets,
